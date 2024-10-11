@@ -1,1 +1,1 @@
-rhgerhjer
+CREATE TABLE student();
