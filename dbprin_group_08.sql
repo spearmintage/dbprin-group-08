@@ -9,7 +9,7 @@ CREATE DATABASE dbprin_group_08;
 -- Owen
 CREATE TABLE department (
     dept_id SERIAL PRIMARY KEY,
-    dept_name VARCHAR(50),
+    dept_name VARCHAR(50) NOT NULL,
     description TEXT
 );
 
@@ -17,7 +17,7 @@ CREATE TABLE department (
 CREATE TABLE course (
     course_id SERIAL PRIMARY KEY,
     dept_id INT NOT NULL,
-    course_name VARCHAR(50),
+    course_name VARCHAR(50) NOT NULL,
     course_description TEXT,
     course_cost DECIMAL(7, 2),
 
@@ -137,33 +137,56 @@ CREATE TABLE room_facility (
 -- Owen
 CREATE TABLE student(
     student_id SERIAL PRIMARY KEY,
-    student_email VARCHAR(50),
-    student_mobile VARCHAR(15),
-    student_first_name VARCHAR(30),
+    student_email VARCHAR(50) NOT NULL,
+    student_mobile VARCHAR(15) NOT NULL,
+    student_first_name VARCHAR(30) NOT NULL,
     student_middle_name VARCHAR(30),
-    student_last_name VARCHAR(30),
-    student_title VARCHAR(4),
-    student_country_code VARCHAR(3),
-    student_landline VARCHAR(15),
+    student_last_name VARCHAR(30) NOT NULL,
+    student_title ENUM NOT NULL, -- not sure how to implement ENUM -- 
     student_addr1 VARCHAR(50),
-    student_addr2 VARCHAR(50),
-    student_city VARCHAR(30),
-    student_postcode VARCHAR(12),
-    student_date_of_birth DATE
+    student_addr2 VARCHAR(50) NOT NULL,
+    student_city VARCHAR(30) NOT NULL,
+    student_postcode VARCHAR(20) -- technically, not everyone has a postcode --
+    student_country_code CHAR(2) NOT NULL,
+    student_date_of_birth DATE NOT NULL
+
 );
 
 -- Owen
 CREATE TABLE emergency_contact (
+    student_emergency_id SERIAL PRIMARY KEY,
+    student_id INT NOT NULL,
+    student_emergency_contact_first_name VARCHAR(30),
+    student_emergency_contact_last_name VARCHAR(30),
+    student_emergency_contact_relationship VARCHAR(20),
+    student_emergency_phone_country_code VARCHAR(4),
+    student_emergency_contact_number VARCHAR(15),
+    student_emergency_contact_alt_number VARCHAR(15),
+    student_emergency_contact_email VARCHAR(50),
+    student_emergency_other_details TEXT,
+    emergency_shares_student_address BOOLEAN
+
+    FOREIGN KEY(student_id) REFERENCES student(student_id)
 
 );
 
 -- Owen
 CREATE TABLE health_condition (
+    health_condition_id SERIAL PRIMARY KEY,
+    health_condition_name VARCHAR(30) NOT NULL,
+    health_condition_notes TEXT
 
 );
 
 -- Owen
 CREATE TABLE student_health_condition (
+    student_id INT NOT NULL,
+    health_condition INT NOT NULL,
+    severity SMALLINT, --Is there a way to filter this so its only from 1-5? --
+    student_health_notes TEXT
+
+    FOREIGN KEY (student_id) REFERENCES student(student_id)
+    FOREIGN KEY (health_condition_id) REFERENCES health_condition(health_condition_id)
 
 );
 
@@ -199,10 +222,27 @@ CREATE TABLE session_staff (
 
 -- Owen
 CREATE TABLE enrolment (
+    enrolment_id SERIAL PRIMARY KEY,
+    course_id INT NOT NULL,
+    student_id INT NOT NULL,
+    enrolment_status VARCHAR(15),
+    enrolment_start_date DATE,
+    enrolement_end_date DATE,
+    final_grade_percentage DECIMAL(3,2)
+
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+    FOREIGN KEY (student_id) REFERENCES student(student_id)
 
 );
 
 -- Owen
 CREATE TABLE student_payment (
+    payment_id SERIAL PRIMARY KEY,
+    enrolment_id INT NOT NULL,
+    payment_status VARCHAR(15),
+    payment_amount DECIMAL(7,2),
+    payment_datetime TIMESTAMP
+
+    FOREIGN KEY (enrolment_id) REFERENCES enrolment(enrolment_id)
 
 );
