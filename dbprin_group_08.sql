@@ -177,23 +177,46 @@ CREATE TABLE STUDENT(
     STUDENT_ADDR1 VARCHAR(50) NOT NULL,
     STUDENT_ADDR2 VARCHAR(50),
     STUDENT_CITY VARCHAR(30) NOT NULL,
-    STUDENT_POSTCODE VARCHAR(20) NOT NULL,
+    STUDENT_POSTCODE VARCHAR(20) NOT NULL, -- Could be NULL as some countries may not have postcodes.
     STUDENT_COUNTRY_CODE CHAR(2) NOT NULL,
     STUDENT_DATE_OF_BIRTH DATE NOT NULL
 );
 
 -- Owen
-CREATE TABLE EMERGENCY_CONTACT (
+CREATE TABLE emergency_contact (
+    student_emergency_id SERIAL PRIMARY KEY,
+    student_id INT NOT NULL,
+    student_emergency_contact_first_name VARCHAR(30),
+    student_emergency_contact_last_name VARCHAR(30),
+    student_emergency_contact_relationship VARCHAR(20),
+    student_emergency_phone_country_code VARCHAR(4),
+    student_emergency_contact_number VARCHAR(15),
+    student_emergency_contact_alt_number VARCHAR(15),
+    student_emergency_contact_email VARCHAR(50),
+    student_emergency_other_details TEXT,
+    emergency_shares_student_address BOOLEAN
+
+    FOREIGN KEY(student_id) REFERENCES student(student_id)
 
 );
 
 -- Owen
-CREATE TABLE HEALTH_CONDITION (
+CREATE TABLE health_condition (
+    health_condition_id SERIAL PRIMARY KEY,
+    health_condition_name VARCHAR(30) NOT NULL,
+    health_condition_notes TEXT
 
 );
 
 -- Owen
-CREATE TABLE STUDENT_HEALTH_CONDITION (
+CREATE TABLE student_health_condition (
+    student_id INT NOT NULL,
+    health_condition INT NOT NULL,
+    severity SMALLINT, --Is there a way to filter this so its only from 1-5? --
+    student_health_notes TEXT
+
+    FOREIGN KEY (student_id) REFERENCES student(student_id)
+    FOREIGN KEY (health_condition_id) REFERENCES health_condition(health_condition_id)
 
 );
 
@@ -288,11 +311,28 @@ CREATE TABLE SESSION_STAFF (
 );
 
 -- Owen
-CREATE TABLE ENROLMENT (
+CREATE TABLE enrolment (
+    enrolment_id SERIAL PRIMARY KEY,
+    course_id INT NOT NULL,
+    student_id INT NOT NULL,
+    enrolment_status VARCHAR(15),
+    enrolment_start_date DATE,
+    enrolement_end_date DATE,
+    final_grade_percentage DECIMAL(3,2)
+
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+    FOREIGN KEY (student_id) REFERENCES student(student_id)
 
 );
 
 -- Owen
-CREATE TABLE STUDENT_PAYMENT (
+CREATE TABLE student_payment (
+    payment_id SERIAL PRIMARY KEY,
+    enrolment_id INT NOT NULL,
+    payment_status VARCHAR(15),
+    payment_amount DECIMAL(7,2),
+    payment_datetime TIMESTAMP
+
+    FOREIGN KEY (enrolment_id) REFERENCES enrolment(enrolment_id)
 
 );
