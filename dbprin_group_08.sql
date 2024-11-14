@@ -183,40 +183,39 @@ CREATE TABLE STUDENT(
 );
 
 -- Owen
-CREATE TABLE emergency_contact (
-    student_emergency_id SERIAL PRIMARY KEY,
-    student_id INT NOT NULL,
-    student_emergency_contact_first_name VARCHAR(30),
-    student_emergency_contact_last_name VARCHAR(30),
-    student_emergency_contact_relationship VARCHAR(20),
-    student_emergency_phone_country_code VARCHAR(4),
-    student_emergency_contact_number VARCHAR(15),
-    student_emergency_contact_alt_number VARCHAR(15),
-    student_emergency_contact_email VARCHAR(50),
-    student_emergency_other_details TEXT,
-    emergency_shares_student_address BOOLEAN
-
+CREATE TABLE EMERGENCY_CONTACT (
+    STUDENT_ID INT NOT NULL,
+    STUDENT_EMERGENCY_ID SERIAL PRIMARY KEY,
+    STUDENT_EMERGENCY_CONTACT_FIRST_NAME VARCHAR(30),
+    STUDENT_EMERGENCY_CONTACT_LAST_NAME VARCHAR(30),
+    STUDENT_EMERGENCY_CONTACT_RELATIONSHIP VARCHAR(20),
+    STUDENT_EMERGENCY_PHONE_COUNTRY_CODE VARCHAR(4),
+    STUDENT_EMERGENCY_CONTACT_NUMBER VARCHAR(15),
+    STUDENT_EMERGENCY_CONTACT_ALT_NUMBER VARCHAR(15),
+    STUDENT_EMERGENCY_CONTACT_EMAIL VARCHAR(50),
+    STUDENT_EMERGENCY_OTHER_DETAILS TEXT,
+    EMERGENCY_SHARES_STUDENT_ADDRESS BOOLEAN
     FOREIGN KEY(student_id) REFERENCES student(student_id)
 
 );
 
 -- Owen
-CREATE TABLE health_condition (
-    health_condition_id SERIAL PRIMARY KEY,
-    health_condition_name VARCHAR(30) NOT NULL,
-    health_condition_notes TEXT
+CREATE TABLE HEALTH_CONDITION (
+    HEALTH_CONDITION_ID SERIAL PRIMARY KEY,
+    HEALTH_CONDITION_NAME VARCHAR(30) NOT NULL,
+    HEALTH_CONDITION_NOTES TEXT
 
 );
-
+HEALTH_CONDITION
 -- Owen
-CREATE TABLE student_health_condition (
-    student_id INT NOT NULL,
-    health_condition INT NOT NULL,
-    severity SMALLINT, --Is there a way to filter this so its only from 1-5? --
-    student_health_notes TEXT
+CREATE TABLE STUDENT_HEALTH_CONDITION (
+    STUDENT_ID INT NOT NULL,
+    HEALTH_CONDITION INT NOT NULL,
+    SEVERITY SMALLINT, --Is there a way to filter this so its only from 1-5? --
+    STUDENT_HEALTH_NOTES TEXT
 
-    FOREIGN KEY (student_id) REFERENCES student(student_id)
-    FOREIGN KEY (health_condition_id) REFERENCES health_condition(health_condition_id)
+    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID)
+    FOREIGN KEY (HEALTH_CONDITION_ID) REFERENCES HEALTH_CONDITION(HEALTH_CONDITION_ID)
 
 );
 
@@ -311,28 +310,28 @@ CREATE TABLE SESSION_STAFF (
 );
 
 -- Owen
-CREATE TABLE enrolment (
-    enrolment_id SERIAL PRIMARY KEY,
-    course_id INT NOT NULL,
-    student_id INT NOT NULL,
-    enrolment_status VARCHAR(15),
-    enrolment_start_date DATE,
-    enrolement_end_date DATE,
-    final_grade_percentage DECIMAL(3,2)
+CREATE TABLE ENROLMENT (
+    ENROLMENT_ID SERIAL PRIMARY KEY,
+    COURSE_ID INT NOT NULL,
+    STUDENT_ID INT NOT NULL,
+    ENROLMENT_STATUS VARCHAR(15),
+    ENROLMENT_START_DATE DATE,
+    ENROLMENT_END_DATE DATE,
+    FINAL_GRADE_PERCENTAGE DECIMAL(3,2)
 
-    FOREIGN KEY (course_id) REFERENCES course(course_id)
-    FOREIGN KEY (student_id) REFERENCES student(student_id)
+    FOREIGN KEY (COURSE_ID) REFERENCES COURSE(COURSE_ID)
+    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID)
 
 );
 
 -- Owen
-CREATE TABLE student_payment (
-    payment_id SERIAL PRIMARY KEY,
-    enrolment_id INT NOT NULL,
-    payment_status VARCHAR(15),
-    payment_amount DECIMAL(7,2),
-    payment_datetime TIMESTAMP
+CREATE TABLE STUDENT_PAYMENT (
+    PAYMENT_ID SERIAL PRIMARY KEY,
+    ENROLMENT_ID INT NOT NULL,
+    PAYMENT_STATUS VARCHAR(15),
+    PAYMENT_AMOUNT DECIMAL(7,2),
+    PAYMENT_DATETIME TIMESTAMP
 
-    FOREIGN KEY (enrolment_id) REFERENCES enrolment(enrolment_id)
+    FOREIGN KEY (ENROLMENT_ID) REFERENCES ENROLMENT(ENROLMENT_ID)
 
 );
