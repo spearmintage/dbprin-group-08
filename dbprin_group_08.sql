@@ -2,6 +2,7 @@ CREATE TYPE session_types AS ENUM ('Lecture', '1-to-1', 'Practical');
 CREATE TYPE title_types AS ENUM ('Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Lord', 'Lady');
 CREATE TYPE room_types AS ENUM ('Computer Lab', 'Science Lab', 'Classroom', 'Lecture Hall');
 CREATE TYPE enrolment_status_type AS ENUM ('Enrolling', 'Complete', 'Dropped Out');
+CREATE TYPE absence_types AS ENUM ('Holiday', 'Personal', 'Sickness');
 
 CREATE OR REPLACE FUNCTION PHONE_CODE_REGEX()
 RETURNS TEXT AS 
@@ -47,7 +48,7 @@ CREATE TABLE course_subject (
     course_id INT NOT NULL,
     subject_id INT NOT NULL,
 
-    FOREIGN KEY (course_id) REFERENCES COURSE(course_id),
+    FOREIGN KEY (course_id) REFERENCES course(course_id),
     FOREIGN KEY (subject_id) REFERENCES subject(subject_id),
     
     PRIMARY KEY (course_id, subject_id)
@@ -62,7 +63,7 @@ CREATE TABLE branch (
     branch_postcode VARCHAR(20),
     branch_country_code CHAR(2) NOT NULL,
     branch_email VARCHAR(50) UNIQUE NOT NULL,
-    branch_phone_country_code VARCHAR(4),
+    branch_phone_country_code VARCHAR(4) NOT NULL,
     branch_phone_number VARCHAR(15) UNIQUE NOT NULL,
 
     CHECK (branch_phone_country_code SIMILAR TO PHONE_CODE_REGEX())
@@ -147,6 +148,7 @@ CREATE TABLE staff_absence (
     staff_id INT NOT NULL,
     absence_start TIMESTAMP NOT NULL,
     absence_end TIMESTAMP NOT NULL,
+    absence_type absence_types NOT NULL,
 
     FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
 
@@ -158,7 +160,7 @@ CREATE TABLE room (
     branch_id INT NOT NULL,
     room_name VARCHAR(20) NOT NULL,
     room_type room_types NOT NULL,
-    capacity INT NOT NULL,
+    capacity SMALLINT NOT NULL,
 
     FOREIGN KEY (branch_id) REFERENCES branch(branch_id),
 
@@ -173,7 +175,7 @@ CREATE TABLE facility (
 CREATE TABLE ROOM_FACILITY (
     room_id INT NOT NULL,
     facility_id INT NOT NULL,
-    quantity INT NOT NULL,
+    quantity SMALLINT NOT NULL,
 
     FOREIGN KEY (room_id) REFERENCES room(room_id),
     FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
@@ -189,7 +191,7 @@ CREATE TABLE student(
     student_first_name VARCHAR(30) NOT NULL,
     student_middle_name VARCHAR(30),
     student_last_name VARCHAR(30) NOT NULL,
-    student_title TITLE_TYPES NOT NULL,
+    student_title title_types NOT NULL,
     student_mobile_code VARCHAR(4) NOT NULL,
     student_mobile VARCHAR(15) UNIQUE NOT NULL,
     student_addr1 VARCHAR(50) NOT NULL,
@@ -215,7 +217,7 @@ CREATE TABLE emergency_contact (
     student_emergency_other_details TEXT,
     emergency_shares_student_address BOOLEAN NOT NULL,
 
-    FOREIGN KEY(student_id) REFERENCES student(student_id),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
 
     CHECK (student_emergency_phone_country_code SIMILAR TO PHONE_CODE_REGEX())
 );
