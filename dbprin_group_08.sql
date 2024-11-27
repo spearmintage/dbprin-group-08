@@ -1,9 +1,8 @@
--- ALL WORKS IN 1 BIG COPY/PASTE
-
-CREATE TYPE SESSION_TYPES AS ENUM ('Lecture', '1-to-1', 'Practical');
-CREATE TYPE TITLE_TYPES AS ENUM ('Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Lord', 'Lady');
-CREATE TYPE ROOM_TYPES AS ENUM ('Computer Lab', 'Science Lab', 'Classroom', 'Lecture Hall');
-CREATE TYPE ENROLMENT_STATUS_TYPE AS ENUM ('Enrolling', 'Complete', 'Dropped Out');
+CREATE TYPE session_types AS ENUM ('Lecture', '1-to-1', 'Practical');
+CREATE TYPE title_types AS ENUM ('Mr', 'Mrs', 'Miss', 'Ms', 'Mx', 'Dr', 'Lord', 'Lady');
+CREATE TYPE room_types AS ENUM ('Computer Lab', 'Science Lab', 'Classroom', 'Lecture Hall');
+CREATE TYPE enrolment_status_type AS ENUM ('Enrolling', 'Complete', 'Dropped Out');
+CREATE TYPE absence_types AS ENUM ('Holiday', 'Personal', 'Sickness');
 
 CREATE OR REPLACE FUNCTION PHONE_CODE_REGEX()
 RETURNS TEXT AS 
@@ -16,11 +15,10 @@ END;
 $$
 LANGUAGE plpgsql;
 
--- All valid
-CREATE TABLE DEPARTMENT (
-    DEPT_ID SERIAL PRIMARY KEY,
-    DEPT_NAME VARCHAR(50) UNIQUE NOT NULL,
-    DESCRIPTION TEXT NOT NULL
+CREATE TABLE department (
+    dept_id SERIAL PRIMARY KEY,
+    dept_name VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT NOT NULL
 );
 
 
@@ -32,360 +30,339 @@ CREATE TABLE COURSE (
     COURSE_DESCRIPTION TEXT NOT NULL,
     COURSE_COST DECIMAL(7, 2) NOT NULL,
 
-    FOREIGN KEY (DEPT_ID) REFERENCES DEPARTMENT(DEPT_ID),
+    FOREIGN KEY (dept_id) REFERENCES department(dept_id),
 
-    CHECK (COURSE_COST >= 0)
+    CHECK (course_cost >= 0)
 );
 
--- All valid
-CREATE TABLE SUBJECT (
-    SUBJECT_ID SERIAL PRIMARY KEY,
-    SUBJECT_NAME VARCHAR(50) NOT NULL,
-    SUBJECT_LEVEL SMALLINT NOT NULL,
-    SUBJECT_DESCRIPTION TEXT NOT NULL,
+CREATE TABLE subject (
+    subject_id SERIAL PRIMARY KEY,
+    subject_name VARCHAR(50) NOT NULL,
+    subject_level SMALLINT NOT NULL,
+    subject_description TEXT NOT NULL,
 
-    CHECK (SUBJECT_LEVEL BETWEEN 4 AND 7),
+    CHECK (subject_level BETWEEN 4 AND 7),
 
-    UNIQUE(SUBJECT_NAME, SUBJECT_LEVEL)
+    UNIQUE(subject_name, subject_level)
 );
 
--- All valid
-CREATE TABLE COURSE_SUBJECT (
-    COURSE_ID INT NOT NULL,
-    SUBJECT_ID INT NOT NULL,
+CREATE TABLE course_subject (
+    course_id INT NOT NULL,
+    subject_id INT NOT NULL,
 
-    FOREIGN KEY (COURSE_ID) REFERENCES COURSE(COURSE_ID),
-    FOREIGN KEY (SUBJECT_ID) REFERENCES SUBJECT(SUBJECT_ID),
+    FOREIGN KEY (course_id) REFERENCES course(course_id),
+    FOREIGN KEY (subject_id) REFERENCES subject(subject_id),
     
-    PRIMARY KEY (COURSE_ID, SUBJECT_ID)
+    PRIMARY KEY (course_id, subject_id)
 );
 
--- All valid
-CREATE TABLE BRANCH (
-    BRANCH_ID SERIAL PRIMARY KEY,
-    BRANCH_NAME VARCHAR(30) UNIQUE NOT NULL,
-    BRANCH_ADDR1 VARCHAR(50) NOT NULL,
-    BRANCH_ADDR2 VARCHAR(50),
-    BRANCH_CITY VARCHAR(30) NOT NULL,
-    BRANCH_POSTCODE VARCHAR(20),
-    BRANCH_COUNTRY_CODE CHAR(2) NOT NULL,
-    BRANCH_EMAIL VARCHAR(50) UNIQUE NOT NULL,
-    BRANCH_PHONE_COUNTRY_CODE VARCHAR(4),
-    BRANCH_PHONE_NUMBER VARCHAR(15) UNIQUE NOT NULL,
+CREATE TABLE branch (
+    branch_id SERIAL PRIMARY KEY,
+    branch_name VARCHAR(30) UNIQUE NOT NULL,
+    branch_addr1 VARCHAR(50) NOT NULL,
+    branch_addr2 VARCHAR(50),
+    branch_city VARCHAR(30) NOT NULL,
+    branch_postcode VARCHAR(20),
+    branch_country_code CHAR(2) NOT NULL,
+    branch_email VARCHAR(50) UNIQUE NOT NULL,
+    branch_phone_country_code VARCHAR(4) NOT NULL,
+    branch_phone_number VARCHAR(15) UNIQUE NOT NULL,
 
-    CHECK (BRANCH_PHONE_COUNTRY_CODE SIMILAR TO PHONE_CODE_REGEX())
+    CHECK (branch_phone_country_code SIMILAR TO PHONE_CODE_REGEX())
 );
 
--- All valid
-CREATE TABLE STAFF (
-    STAFF_ID SERIAL PRIMARY KEY,
-    DEPT_ID INT NOT NULL,
-    BRANCH_ID INT NOT NULL,
-    IS_BRANCH_MANAGER BOOLEAN NOT NULL,
-    STAFF_EMAIL VARCHAR(50) UNIQUE NOT NULL,
-    STAFF_MOBILE_CODE VARCHAR(4) NOT NULL,
-    STAFF_MOBILE_NUMBER VARCHAR(15) UNIQUE NOT NULL,
-    STAFF_FIRST_NAME VARCHAR(30) NOT NULL,
-    STAFF_MIDDLE_NAME VARCHAR(30),
-    STAFF_LAST_NAME VARCHAR(30) NOT NULL,
-    STAFF_TITLE TITLE_TYPES NOT NULL,
-    STAFF_ADDR1 VARCHAR(50) NOT NULL,
-    STAFF_ADDR2 VARCHAR(50),
-    STAFF_CITY VARCHAR(30) NOT NULL,
-    STAFF_POSTCODE VARCHAR(20),
-    STAFF_COUNTRY_CODE CHAR(2) NOT NULL,
+CREATE TABLE staff (
+    staff_id SERIAL PRIMARY KEY,
+    dept_id INT NOT NULL,
+    branch_id INT NOT NULL,
+    is_branch_manager BOOLEAN NOT NULL,
+    staff_email VARCHAR(50) UNIQUE NOT NULL,
+    staff_mobile_code VARCHAR(4) NOT NULL,
+    staff_mobile_number VARCHAR(15) UNIQUE NOT NULL,
+    staff_first_name VARCHAR(30) NOT NULL,
+    staff_middle_name VARCHAR(30),
+    staff_last_name VARCHAR(30) NOT NULL,
+    staff_title title_types NOT NULL,
+    staff_addr1 VARCHAR(50) NOT NULL,
+    staff_addr2 VARCHAR(50),
+    staff_city VARCHAR(30) NOT NULL,
+    staff_postcode VARCHAR(20),
+    staff_country_code CHAR(2) NOT NULL,
 
-    FOREIGN KEY (DEPT_ID) REFERENCES DEPARTMENT(DEPT_ID),
-    FOREIGN KEY (BRANCH_ID) REFERENCES BRANCH(BRANCH_ID),
+    FOREIGN KEY (dept_id) REFERENCES department(dept_id),
+    FOREIGN KEY (branch_id) REFERENCES branch(branch_id),
 
-    CHECK (STAFF_MOBILE_CODE SIMILAR TO PHONE_CODE_REGEX())
+    CHECK (staff_mobile_code SIMILAR TO PHONE_CODE_REGEX())
 );
 
--- All valid
-CREATE TABLE STAFF_ASSIGNMENT (
-    STAFF_ASSIGNMENT_ID SERIAL PRIMARY KEY,
-    BRANCH_MANAGER_ID INT NOT NULL,
-    STAFF_ID INT NOT NULL,
-    ASSIGNMENT_TITLE VARCHAR(30) NOT NULL,
-    ASSIGNMENT_DESCRIPTION TEXT NOT NULL,
-    ASSIGNMENT_DEADLINE TIMESTAMP,
-    ASSIGNMENT_COMPLETE BOOLEAN NOT NULL,
-    IS_URGENT BOOLEAN NOT NULL,
+CREATE TABLE staff_assignment (
+    staff_assignment_id SERIAL PRIMARY KEY,
+    branch_manager_id INT NOT NULL,
+    staff_id INT NOT NULL,
+    assignment_title VARCHAR(100) NOT NULL,
+    assignment_description TEXT NOT NULL,
+    assignment_deadline TIMESTAMP,
+    assignment_complete BOOLEAN NOT NULL,
+    is_urgent BOOLEAN NOT NULL,
 
-    FOREIGN KEY (BRANCH_MANAGER_ID) REFERENCES STAFF(STAFF_ID),
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID)
+    FOREIGN KEY (branch_manager_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
 );
 
--- All valid
-CREATE TABLE COURSE_STAFF (
-    COURSE_ID INT NOT NULL,
-    STAFF_ID INT NOT NULL,
+CREATE TABLE course_staff (
+    course_id INT NOT NULL,
+    staff_id INT NOT NULL,
 
-    FOREIGN KEY (COURSE_ID) REFERENCES COURSE(COURSE_ID),
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID),
+    FOREIGN KEY (course_id) REFERENCES course(course_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
     
-    PRIMARY KEY (COURSE_ID, STAFF_ID)
+    PRIMARY KEY (course_id, staff_id)
 );
 
--- All valid
-CREATE TABLE ROLE (
-    ROLE_ID SERIAL PRIMARY KEY,
-    ROLE_NAME VARCHAR(50) UNIQUE NOT NULL,
-    ROLE_DESCRIPTION TEXT NOT NULL
+CREATE TABLE role (
+    role_id SERIAL PRIMARY KEY,
+    role_name VARCHAR(50) UNIQUE NOT NULL,
+    role_description TEXT NOT NULL
 );
 
--- All valid
-CREATE TABLE STAFF_ROLE (
-    STAFF_ID INT NOT NULL,
-    ROLE_ID INT NOT NULL,
+CREATE TABLE staff_role (
+    staff_id INT NOT NULL,
+    role_id INT NOT NULL,
 
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID),
-    FOREIGN KEY (ROLE_ID) REFERENCES ROLE(ROLE_ID),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (role_id) REFERENCES role(role_id),
 
-    PRIMARY KEY (STAFF_ID, ROLE_ID)
+    PRIMARY KEY (staff_id, role_id)
 );
 
--- All valid
-CREATE TABLE STAFF_AVAILABILITY (
-    STAFF_ID INT NOT NULL,
-    DAY_OF_WEEK SMALLINT NOT NULL,
+CREATE TABLE staff_availability (
+    staff_id INT NOT NULL,
+    day_of_week SMALLINT NOT NULL,
 
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
 
-    CHECK (DAY_OF_WEEK BETWEEN 1 AND 7),
+    CHECK (day_of_week BETWEEN 1 AND 7),
 
-    PRIMARY KEY (STAFF_ID, DAY_OF_WEEK)
+    PRIMARY KEY (staff_id, day_of_week)
 );
 
--- All valid
-CREATE TABLE STAFF_ABSENCE (
-    STAFF_ID INT NOT NULL,
-    ABSENCE_START TIMESTAMP NOT NULL,
-    ABSENCE_END TIMESTAMP NOT NULL,
+CREATE TABLE staff_absence (
+    staff_id INT NOT NULL,
+    absence_start TIMESTAMP NOT NULL,
+    absence_end TIMESTAMP NOT NULL,
+    absence_type absence_types NOT NULL,
 
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
 
-    PRIMARY KEY (STAFF_ID, ABSENCE_START, ABSENCE_END)
+    PRIMARY KEY (staff_id, absence_start, absence_end)
 );
 
--- All valid
-CREATE TABLE ROOM (
-    ROOM_ID SERIAL PRIMARY KEY,
-    BRANCH_ID INT NOT NULL,
-    ROOM_NAME VARCHAR(20) NOT NULL,
-    ROOM_TYPE ROOM_TYPES NOT NULL,
-    CAPACITY INT NOT NULL,
+CREATE TABLE room (
+    room_id SERIAL PRIMARY KEY,
+    branch_id INT NOT NULL,
+    room_name VARCHAR(20) NOT NULL,
+    room_type room_types NOT NULL,
+    capacity SMALLINT NOT NULL,
 
-    FOREIGN KEY (BRANCH_ID) REFERENCES BRANCH(BRANCH_ID),
+    FOREIGN KEY (branch_id) REFERENCES branch(branch_id),
 
-    CHECK (CAPACITY > 0)
+    CHECK (capacity > 0)
 );
 
--- All valid
-CREATE TABLE FACILITY (
-    FACILITY_ID SERIAL PRIMARY KEY,
-    FACILITY_NAME VARCHAR(50) UNIQUE NOT NULL
+CREATE TABLE facility (
+    facility_id SERIAL PRIMARY KEY,
+    facility_name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- All valid
 CREATE TABLE ROOM_FACILITY (
-    ROOM_ID INT NOT NULL,
-    FACILITY_ID INT NOT NULL,
-    QUANTITY INT NOT NULL,
+    room_id INT NOT NULL,
+    facility_id INT NOT NULL,
+    quantity SMALLINT NOT NULL,
 
-    FOREIGN KEY (ROOM_ID) REFERENCES ROOM(ROOM_ID),
-    FOREIGN KEY (FACILITY_ID) REFERENCES FACILITY(FACILITY_ID),
+    FOREIGN KEY (room_id) REFERENCES room(room_id),
+    FOREIGN KEY (facility_id) REFERENCES facility(facility_id),
 
-    CHECK (QUANTITY > 0),
+    CHECK (quantity > 0),
 
-    PRIMARY KEY (ROOM_ID, FACILITY_ID)
+    PRIMARY KEY (room_id, facility_id)
 );
 
--- All valid
-CREATE TABLE STUDENT(
-    STUDENT_ID SERIAL PRIMARY KEY,
-    STUDENT_EMAIL VARCHAR(50) UNIQUE NOT NULL,
-    STUDENT_FIRST_NAME VARCHAR(30) NOT NULL,
-    STUDENT_MIDDLE_NAME VARCHAR(30),
-    STUDENT_LAST_NAME VARCHAR(30) NOT NULL,
-    STUDENT_TITLE TITLE_TYPES NOT NULL,
-    STUDENT_MOBILE_CODE VARCHAR(4) NOT NULL,
-    STUDENT_MOBILE VARCHAR(15) UNIQUE NOT NULL,
-    STUDENT_ADDR1 VARCHAR(50) NOT NULL,
-    STUDENT_ADDR2 VARCHAR(50),
-    STUDENT_CITY VARCHAR(30) NOT NULL,
-    STUDENT_POSTCODE VARCHAR(20),
-    STUDENT_COUNTRY_CODE CHAR(2) NOT NULL,
-    STUDENT_DATE_OF_BIRTH DATE NOT NULL,
+CREATE TABLE student(
+    student_id SERIAL PRIMARY KEY,
+    student_email VARCHAR(50) UNIQUE NOT NULL,
+    student_first_name VARCHAR(30) NOT NULL,
+    student_middle_name VARCHAR(30),
+    student_last_name VARCHAR(30) NOT NULL,
+    student_title title_types NOT NULL,
+    student_mobile_code VARCHAR(4) NOT NULL,
+    student_mobile VARCHAR(15) UNIQUE NOT NULL,
+    student_addr1 VARCHAR(50) NOT NULL,
+    student_addr2 VARCHAR(50),
+    student_city VARCHAR(30) NOT NULL,
+    student_postcode VARCHAR(20),
+    student_country_code CHAR(2) NOT NULL,
+    student_date_of_birth DATE NOT NULL,
 
-    CHECK (STUDENT_MOBILE_CODE SIMILAR TO PHONE_CODE_REGEX())
+    CHECK (student_mobile_code SIMILAR TO PHONE_CODE_REGEX())
 );
 
--- All valid
-CREATE TABLE EMERGENCY_CONTACT (
-    STUDENT_EMERGENCY_CONTACT_ID SERIAL PRIMARY KEY,
-    STUDENT_ID INT NOT NULL,
-    STUDENT_EMERGENCY_CONTACT_FIRST_NAME VARCHAR(30) NOT NULL,
-    STUDENT_EMERGENCY_CONTACT_LAST_NAME VARCHAR(30) NOT NULL,
-    STUDENT_EMERGENCY_CONTACT_RELATIONSHIP VARCHAR(20) NOT NULL,
-    STUDENT_EMERGENCY_PHONE_COUNTRY_CODE VARCHAR(4) NOT NULL,
-    STUDENT_EMERGENCY_CONTACT_NUMBER VARCHAR(15) UNIQUE NOT NULL,
-    STUDENT_EMERGENCY_CONTACT_ALT_NUMBER VARCHAR(15),
-    STUDENT_EMERGENCY_CONTACT_EMAIL VARCHAR(50) UNIQUE NOT NULL,
-    STUDENT_EMERGENCY_OTHER_DETAILS TEXT,
-    EMERGENCY_SHARES_STUDENT_ADDRESS BOOLEAN NOT NULL,
+CREATE TABLE emergency_contact (
+    student_emergency_contact_id SERIAL PRIMARY KEY,
+    student_id INT NOT NULL,
+    student_emergency_contact_first_name VARCHAR(30) NOT NULL,
+    student_emergency_contact_last_name VARCHAR(30) NOT NULL,
+    student_emergency_contact_relationship VARCHAR(20) NOT NULL,
+    student_emergency_phone_country_code VARCHAR(4) NOT NULL,
+    student_emergency_contact_number VARCHAR(15) UNIQUE NOT NULL,
+    student_emergency_contact_alt_number VARCHAR(15),
+    student_emergency_contact_email VARCHAR(50) UNIQUE NOT NULL,
+    student_emergency_other_details TEXT,
+    emergency_shares_student_address BOOLEAN NOT NULL,
 
-    FOREIGN KEY(STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
 
-    CHECK (STUDENT_EMERGENCY_PHONE_COUNTRY_CODE SIMILAR TO PHONE_CODE_REGEX())
+    CHECK (student_emergency_phone_country_code SIMILAR TO PHONE_CODE_REGEX())
 );
 
--- All valid
-CREATE TABLE HEALTH_CONDITION (
-    HEALTH_CONDITION_ID SERIAL PRIMARY KEY,
-    HEALTH_CONDITION_NAME VARCHAR(30) UNIQUE NOT NULL,
-    HEALTH_CONDITION_NOTES TEXT
+CREATE TABLE health_condition (
+    health_condition_id SERIAL PRIMARY KEY,
+    health_condition_name VARCHAR(30) UNIQUE NOT NULL,
+    health_condition_notes TEXT
 );
 
--- All valid
-CREATE TABLE STUDENT_HEALTH_CONDITION (
-    STUDENT_ID INT NOT NULL,
-    HEALTH_CONDITION_ID INT NOT NULL,
-    SEVERITY SMALLINT NOT NULL, 
-    STUDENT_HEALTH_NOTES TEXT,
+CREATE TABLE student_health_condition (
+    student_id INT NOT NULL,
+    health_condition_id INT NOT NULL,
+    severity SMALLINT NOT NULL, 
+    student_health_notes TEXT,
 
-    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
-    FOREIGN KEY (HEALTH_CONDITION_ID) REFERENCES HEALTH_CONDITION(HEALTH_CONDITION_ID),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
+    FOREIGN KEY (health_condition_id) REFERENCES health_condition(health_condition_id),
 
-    CHECK (SEVERITY BETWEEN 1 AND 5),
+    CHECK (severity BETWEEN 1 AND 5),
 
-    PRIMARY KEY (STUDENT_ID, HEALTH_CONDITION_ID)
+    PRIMARY KEY (student_id, health_condition_id)
 );
 
--- All valid
-CREATE TABLE EVALUATION_SESSION (
-    TUTOR_ID INT NOT NULL,
-    STUDENT_ID INT NOT NULL,
-    SESSION_DATETIME TIMESTAMP NOT NULL,
-    ROOM_ID INT,
-    SESSION_NOTES TEXT,
-    IS_ONLINE BOOLEAN NOT NULL,
+CREATE TABLE evaluation_session (
+    tutor_id INT NOT NULL,
+    student_id INT NOT NULL,
+    session_datetime TIMESTAMP NOT NULL,
+    room_id INT,
+    session_notes TEXT,
+    is_online BOOLEAN NOT NULL,
 
-    FOREIGN KEY (TUTOR_ID) REFERENCES STAFF(STAFF_ID),
-    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
-    FOREIGN KEY (ROOM_ID) REFERENCES ROOM(ROOM_ID),
+    FOREIGN KEY (tutor_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
+    FOREIGN KEY (room_id) REFERENCES room(room_id),
 
-    PRIMARY KEY (TUTOR_ID, STUDENT_ID, SESSION_DATETIME)
+    CHECK ((NOT is_online AND room_id IS NOT NULL) OR (is_online AND room_id IS NULL)),
+
+    PRIMARY KEY (tutor_id, student_id, session_datetime)
 );
 
--- All valid
-CREATE TABLE ASSIGNMENT (
-    ASSIGNMENT_ID SERIAL PRIMARY KEY,
-    STAFF_ID INT NOT NULL,
-    SUBJECT_ID INT NOT NULL,
-    SET_DATE TIMESTAMP NOT NULL,
-    DUE_DATE TIMESTAMP,
-    ASSIGNMENT_DESCRIPTION TEXT,
+CREATE TABLE assignment (
+    assignment_id SERIAL PRIMARY KEY,
+    staff_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    set_date TIMESTAMP NOT NULL,
+    due_date TIMESTAMP,
+    assignment_description TEXT,
+    is_assignment_assessed BOOLEAN NOT NULL,
+    assignment_weight DECIMAL(5, 2),
 
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID),
-    FOREIGN KEY (SUBJECT_ID) REFERENCES SUBJECT(SUBJECT_ID),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (subject_id) REFERENCES subject(subject_id),
 
-    CHECK (DUE_DATE >= SET_DATE OR DUE_DATE IS NULL)
+    CHECK (due_date >= set_date OR due_date IS NULL),
+    CHECK (assignment_weight BETWEEN 0 AND 100 OR assignment_weight IS NULL)
 );
 
--- All valid
-CREATE TABLE STUDENT_ASSIGNMENT (
-    STUDENT_ID INT NOT NULL,
-    ASSIGNMENT_ID INT NOT NULL,
-    SUBMISSION_DATETIME TIMESTAMP NOT NULL,
-    IS_ASSIGNMENT_ASSESSED BOOLEAN NOT NULL,
-    ASSIGNMENT_PERCENTAGE DECIMAL(5, 2),
-    ASSIGNMENT_WEIGHT DECIMAL(5, 2),
+CREATE TABLE student_assignment (
+    student_id INT NOT NULL,
+    assignment_id INT NOT NULL,
+    submission_datetime TIMESTAMP NOT NULL,
+    assignment_percentage DECIMAL(5, 2),
 
-    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
-    FOREIGN KEY (ASSIGNMENT_ID) REFERENCES ASSIGNMENT(ASSIGNMENT_ID),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
+    FOREIGN KEY (assignment_id) REFERENCES assignment(assignment_id),
 
-    CHECK (ASSIGNMENT_PERCENTAGE BETWEEN 0 AND 100 OR ASSIGNMENT_PERCENTAGE IS NULL),
-    CHECK (ASSIGNMENT_WEIGHT BETWEEN 0 AND 100 OR ASSIGNMENT_WEIGHT IS NULL),
+    CHECK (assignment_percentage BETWEEN 0 AND 100 OR assignment_percentage IS NULL),
 
-    PRIMARY KEY (STUDENT_ID, ASSIGNMENT_ID, SUBMISSION_DATETIME)
+    PRIMARY KEY (student_id, assignment_id, submission_datetime)
 );
 
--- All valid
-CREATE TABLE SESSION (
-    SESSION_ID SERIAL PRIMARY KEY,
-    SUBJECT_ID INT NOT NULL,
-    ROOM_ID INT,
-    SESSION_TYPE SESSION_TYPES NOT NULL,
-    SESSION_STATUS VARCHAR(15) NOT NULL,
-    SESSION_NAME VARCHAR(100) NOT NULL,
-    SESSION_START TIMESTAMP NOT NULL,
-    SESSION_END TIMESTAMP NOT NULL,
-    IS_ONLINE BOOLEAN NOT NULL,
+CREATE TABLE session (
+    session_id SERIAL PRIMARY KEY,
+    subject_id INT NOT NULL,
+    room_id INT,
+    session_type session_types NOT NULL,
+    session_status VARCHAR(15) NOT NULL,
+    session_name VARCHAR(100) NOT NULL,
+    session_start TIMESTAMP NOT NULL,
+    session_end TIMESTAMP NOT NULL,
+    is_online BOOLEAN NOT NULL,
 
-    FOREIGN KEY (SUBJECT_ID) REFERENCES SUBJECT(SUBJECT_ID),
-    FOREIGN KEY (ROOM_ID) REFERENCES ROOM(ROOM_ID),
+    FOREIGN KEY (subject_id) REFERENCES subject(subject_id),
+    FOREIGN KEY (room_id) REFERENCES room(room_id),
 
-    CHECK (SESSION_END >= SESSION_START)
+    CHECK (session_end >= session_start),
+    CHECK ((NOT is_online AND room_id IS NOT NULL) OR (is_online AND room_id IS NULL))
 );
 
--- All valid
-CREATE TABLE SESSION_STUDENT (
-    SESSION_ID INT NOT NULL,
-    STUDENT_ID INT NOT NULL,
-    ATTENDANCE_STATUS VARCHAR(15) NOT NULL,
-    FEEDBACK_GENERAL_RATING SMALLINT,
-    FEEDBACK_ONLINE_CONNECTION_QUALITY SMALLINT,
-    FEEDBACK_CONCEPT_UNDERSTOOD_RATING SMALLINT,
-    FEEDBACK_EXTRA_NOTES TEXT,
+CREATE TABLE session_student (
+    session_id INT NOT NULL,
+    student_id INT NOT NULL,
+    attendance_status VARCHAR(15) NOT NULL,
+    feedback_general_rating SMALLINT,
+    feedback_online_connection_quality SMALLINT,
+    feedback_concept_understood_rating SMALLINT,
+    feedback_extra_notes TEXT,
 
-    FOREIGN KEY (SESSION_ID) REFERENCES SESSION(SESSION_ID),
-    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
+    FOREIGN KEY (session_id) REFERENCES session(session_id),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
 
-    CHECK (FEEDBACK_GENERAL_RATING BETWEEN 0 AND 10),
-    CHECK (FEEDBACK_ONLINE_CONNECTION_QUALITY BETWEEN 0 AND 10),
-    CHECK (FEEDBACK_CONCEPT_UNDERSTOOD_RATING BETWEEN 0 AND 10),
+    CHECK (feedback_general_rating BETWEEN 0 AND 10),
+    CHECK (feedback_online_connection_quality BETWEEN 0 AND 10),
+    CHECK (feedback_concept_understood_rating BETWEEN 0 AND 10),
 
-    PRIMARY KEY (SESSION_ID, STUDENT_ID)
+    PRIMARY KEY (session_id, student_id)
 );
 
--- All valid
-CREATE TABLE SESSION_STAFF (
-    SESSION_ID INT NOT NULL,
-    STAFF_ID INT NOT NULL,
+CREATE TABLE session_staff (
+    session_id INT NOT NULL,
+    staff_id INT NOT NULL,
 
-    FOREIGN KEY (SESSION_ID) REFERENCES SESSION(SESSION_ID),
-    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFF_ID),
+    FOREIGN KEY (session_id) REFERENCES session(session_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
     
-    PRIMARY KEY (SESSION_ID, STAFF_ID)
+    PRIMARY KEY (session_id, staff_id)
 );
 
--- All valid
-CREATE TABLE ENROLMENT (
-    ENROLMENT_ID SERIAL PRIMARY KEY,
-    COURSE_ID INT NOT NULL,
-    STUDENT_ID INT NOT NULL,
-    ENROLMENT_STATUS VARCHAR(15) NOT NULL,
-    ENROLMENT_START_DATE DATE NOT NULL,
-    ENROLMENT_END_DATE DATE NOT NULL,
-    FINAL_GRADE_PERCENTAGE DECIMAL(5, 2),
+CREATE TABLE enrolment (
+    enrolment_id SERIAL PRIMARY KEY,
+    course_id INT NOT NULL,
+    student_id INT NOT NULL,
+    enrolment_status VARCHAR(15) NOT NULL,
+    enrolment_start_date DATE NOT NULL,
+    enrolment_end_date DATE NOT NULL,
+    final_grade_percentage DECIMAL(5, 2),
 
-    FOREIGN KEY (COURSE_ID) REFERENCES COURSE(COURSE_ID),
-    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
+    FOREIGN KEY (course_id) REFERENCES course(course_id),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
 
-    CHECK (ENROLMENT_END_DATE > ENROLMENT_START_DATE),
-    CHECK (FINAL_GRADE_PERCENTAGE BETWEEN 0 AND 100 OR FINAL_GRADE_PERCENTAGE IS NULL)
+    CHECK (enrolment_end_date > enrolment_start_date),
+    CHECK (final_grade_percentage BETWEEN 0 AND 100 OR final_grade_percentage IS NULL)
 );
 
--- All valid
-CREATE TABLE STUDENT_PAYMENT (
-    PAYMENT_ID SERIAL PRIMARY KEY,
-    ENROLMENT_ID INT NOT NULL,
-    PAYMENT_STATUS VARCHAR(15) NOT NULL,
-    PAYMENT_AMOUNT DECIMAL(7,2) NOT NULL,
-    PAYMENT_DATETIME TIMESTAMP NOT NULL,
+CREATE TABLE student_payment (
+    payment_id SERIAL PRIMARY KEY,
+    enrolment_id INT NOT NULL,
+    payment_status VARCHAR(15) NOT NULL,
+    payment_amount DECIMAL(7,2) NOT NULL,
+    payment_datetime TIMESTAMP NOT NULL,
 
-    FOREIGN KEY (ENROLMENT_ID) REFERENCES ENROLMENT(ENROLMENT_ID),
+    FOREIGN KEY (enrolment_id) REFERENCES enrolment(enrolment_id),
 
-    CHECK (PAYMENT_AMOUNT >= 0)
+    CHECK (payment_amount >= 0)
 );
