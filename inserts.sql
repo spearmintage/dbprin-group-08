@@ -10,3 +10,51 @@ VALUES
     (),
     (),
     ();
+
+INSERT INTO facility(FACILITY_ID, FACILITY_NAME)
+VALUES
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    ();
+
+INSERT INTO role(ROLE_ID, ROLE_NAME, ROLE_DESCRIPTION)
+VALUES
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    (),
+    ();
+
+INSERT INTO department()
