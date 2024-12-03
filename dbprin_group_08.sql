@@ -21,12 +21,14 @@ CREATE TABLE department (
     description TEXT NOT NULL
 );
 
-CREATE TABLE course (
-    course_id SERIAL PRIMARY KEY,
-    dept_id INT NOT NULL,
-    course_name VARCHAR(50) UNIQUE NOT NULL,
-    course_description TEXT NOT NULL,
-    course_cost DECIMAL(7, 2) NOT NULL,
+
+-- All valid
+CREATE TABLE COURSE (
+    COURSE_ID SERIAL PRIMARY KEY,
+    DEPT_ID INT NOT NULL,
+    COURSE_NAME VARCHAR(50) UNIQUE NOT NULL,
+    COURSE_DESCRIPTION TEXT NOT NULL,
+    COURSE_COST DECIMAL(7, 2) NOT NULL,
 
     FOREIGN KEY (dept_id) REFERENCES department(dept_id),
 

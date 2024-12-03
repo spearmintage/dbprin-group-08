@@ -6021,3 +6021,97 @@ VALUES (18, 29, '2024-05-03 11:40:00', 15, NULL, false),
         'justo in blandit ultrices enim lorem ipsum dolor sit amet consectetuer adipiscing elit proin interdum mauris non ligula pellentesque ultrices phasellus id sapien in sapien iaculis congue vivamus metus arcu adipiscing molestie hendrerit at vulputate vitae nisl',
         false
     );
+
+
+
+
+
+INSERT INTO session_student (session_id, student_id, attendance_status, feedback_general_rating, feedback_online_connection_quality, feedback_concept_understood_rating, feedback_extra_notes)
+VALUES
+    (1,2,'Present',NULL,NULL,NULL,'Maecenas dictum ipsum leo.'),
+    (3,3,'Present',NULL,3,2,'Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.'),
+    (3,5,'Present',1,3,NULL,'Mauris vestibulum,'),
+    (4,8,'Present',5,5,NULL,'Vestibulum ante ipsum primis'),
+    (5,9,'Present',5,7,6,'Nam ultricies dolor et tellus hendrerit,'),
+    (7,9,'Present',6,8,8,'Pellentesque porttitor nisl sed semper mattis.'),
+    (6,9,'late',1,9,10,'Phasellus sed ante nibh.'),
+    (12,11,'late',NULL,9,3,'Integer feugiat libero sed tristique mattis.'),
+    (15,15,'Not Present',NULL,NULL,NULL,'Morbi nec aliquam arcu,'),
+    (20,19,'Late',2,3,5,'Phasellus eu ipsum ut orci pellentesque sollicitudin ut vel ipsum.'),
+    (22,19,'Not Present',NULL,NULL,NULL,'Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.'),
+    (24,20,'Present',3,7,NULL,'Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.'),
+    (28,21,'Present',6,9,NULL,'In hac habitasse platea dictumst.'),
+    (10,22,'Present',8,9,5,'In hac habitasse platea dictumst.'),
+    (19,24,'Present',9,8,8,'In hac habitasse platea dictumst.'),
+    (11,25,'Late',10,4,5,'In hac habitasse platea dictumst.'),
+    (23,25,'Not Present',NULL,NULL,NULL,'Suspendisse potenti.'),
+    (25,26,'Not Present',NULL,NULL,NULL,'Suspendisse potenti.');
+
+INSERT INTO assignment (assignment_id, staff_id, subject_id, set_date, due_date, assignment_description, is_assignment_assessed, assignment_weight)
+VALUES
+    (1,1,1,2024-11-26 13:00:00,2024-11-26 14:00:00,'Sed ac lobortis metus.',TRUE,90),
+    (2,2,43,2024-11-26 13:00:00,2024-11-26 14:00:00,'In ut posuere mauris, non consectetur sem.',TRUE,30,),
+    (3,2,22,2024-11-27 13:00:00,2024-11-30 13:00:00,'Sed sed volutpat leo.',FALSE,NULL),
+    (4,4,33,2024-11-28 13:00:00,2024-11-30 13:00:00,'Curabitur tristique, nunc ut porttitor ultricies, leo augue rutrum enim, eu convallis sapien purus eget nisi.',FALSE,NULL),
+    (5,7,31,2024-11-28 13:45:00,2024-11-30 13:00:00,'Donec sed auctor ex, consectetur tempus magna.',FALSE,NULL),
+    (6,9,32,2024-11-28 13:45:00,2024-11-30 13:00:00,'Ut pharetra ligula leo, non ullamcorper orci blandit eu.',FALSE,NULL),
+    (7,22,32,2024-11-28 13:45:00,2024-11-30 13:00:00,'Suspendisse pharetra, est ut pellentesque iaculis, massa metus ullamcorper nibh, et efficitur lectus tellus at ipsum.',FALSE,NULL),
+    (8,11,20,2024-11-28 13:45:00,2024-11-30 13:00:00,'Nam vel ornare dui, ac lacinia dolor.',TRUE,33.33),
+    (9,40,1,2024-11-28 14:45:00,2024-11-30 13:00:00,'Nam ut nulla consectetur justo auctor fermentum id eget diam.',TRUE,70),
+    (10,27,2,2024-11-29 14:45:00,2024-12-01 16:00:00,'Integer varius vestibulum mi vitae scelerisque.',TRUE,12.5),
+    (11,23,4,2024-11-29 15:45:00,2024-12-01 16:00:00,'Nunc maximus dignissim odio nec iaculis.',FALSE,NULL),
+    (12,22,7,2024-11-29 17:45:00,2024-12-05 16:00:00,'Phasellus gravida ultricies dui, ac consequat erat consectetur nec.',FALSE,NULL),
+    (13,20,8,2024-11-29 17:45:00,2024-12-05 16:00:00,'Ut eget justo erat',FALSE,NULL),
+    (14,33,9,2024-11-29 17:45:00,2024-12-07 16:00:00,' In nisl elit,',TRUE,12.5),
+    (15,44,11,2024-11-29 17:45:00,2024-12-11 18:00:00,'consequat ac vehicula quis, volutpat vitae urna.',TRUE,12.5),
+    (16,36,12,2024-11-30 18:00:00,2024-12-12 13:00:00,' Vivamus consequat semper faucibus. Vivamus fermentum dui luctus neque tempus convallis.',TRUE,60),
+    (17,12,15,2024-11-30 13:00:00,2024-12-14 13:00:00,' Nam posuere dignissim nibh',TRUE,10),
+    (18,11,17,2024-12-02 13:00:00,2024-12-15 13:00:00,'Suspendisse eu tincidunt metus, sit amet pharetra neque.',FALSE,NULL),
+    (19,9,19,2024-12-02 13:00:00,2024-12-15 13:00:00,'Suspendisse eu tincidunt metus, sit amet pharetra neque.',FALSE,NULL),
+    (20,8,19,2024-12-04 13:30:00,2024-12-17 13:00:00,'Fusce eu tincidunt nibh.',TRUE,62.5);
+
+INSERT INTO student_assignment (student_id, assignment_id, submission_datetime, assignment_percentage)
+VALUES
+    (1,20,2024-12-17 13:00:00,50.5),
+    (1,10,2024-12-01 15:00:00,50),
+    (2,10,2024-12-01 12:00:00,80),
+    (3,11,2024-12-01 10:00:00,84),
+    (7,13,2024-12-01 16:00:00,82),
+    (8,12,2024-12-01 16:00:00,30),
+    (8,9,2024-12-01 15:00:00,100),
+    (10,4,2024-12-02 12:00:00,90.04),
+    (12,3,2024-11-28 15:30:00,60),
+    (14,3,2024-11-28 16:00:00,65.5),
+    (15,3,2024-11-28 16:00:00,45.9),
+    (16,2,2024-11-28 16:30:00,62),
+    (17,1,2024-11-28 16:00:00,83.2),
+    (17,15,2024-12-01 16:00:00,88.3),
+    (19,15,2024-12-01 16:20:00,91.1),
+    (23,18,2024-12-01 16:00:00,90),
+    (27,19,2024-12-01 16:15:00,100),
+    (28,12,2024-12-01 16:00:00,0),
+    (29,11,2024-12-01 16:08:00,70),
+    (20,5,2024-11-28 16:11:00,68),
+
+INSERT INTO student_payment (payment_id, enrolment_id, payment_status, payment_amount, payment_datetime)
+VALUES
+    (1,1,'Fully paid',5000,2024-12-17 14:00:00),
+    (2,3,'Fully paid',500,2024-12-10 11:00:00),
+    (3,5,'Partially paid',200,2023-12-12 09:00:00),
+    (4,6,'Failed transaction',0,2023-12-15 06:00:00),
+    (5,7,'Fully paid',7000,2022-12-30 13:00:00),
+    (6,8,'Fully paid',7000,2024-12-18 13:00:00),
+    (7,9,'Fully paid',100,2024-10-11 17:00:00),
+    (8,10,'Fully paid',100,2024-09-03 16:00:00),
+    (9,12,'Fully paid',100,2023-12-20 12:00:00),
+    (10,13,'Partially paid',4000,2023-12-18 12:00:00),
+    (11,14,'Partially paid',4000,2024-02-04 11:00:00),
+    (12,15,'Partially paid',4000,2024-07-17 16:00:00),
+    (13,16,'Fully paid',7000,2024-11-22 16:00:00),
+    (14,17,'Fully paid',7000,2024-12-17 12:00:00),
+    (15,18,'Fully paid',7000,2024-12-17 19:00:00),
+    (16,20,'Fully paid',7000,2024-05-09 15:00:00),
+    (17,24,'Fully paid',8000,2024-01-01 15:00:00),
+    (18,27,'Failed transaction',0,2024-06-19 17:00:00),
+    (19,28,'Partially paid',400,2024-06-03 09:00:00),
+    (20,30,'Partially paid',400,2024-12-17 12:00:00);
