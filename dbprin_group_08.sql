@@ -1730,3 +1730,34 @@ VALUES
     (18,27,'Payment Failed',0,'2024-06-19 17:00:00'),
     (19,28,'Payment Pending',400,'2024-06-03 09:00:00'),
     (20,30,'Payment Pending',400,'2024-12-17 12:00:00');
+
+
+-- Queries
+
+
+-- staff name, email, branch, has overdue assignments?, total sessions taught?, roles (owen)
+-- plan: create subqueries for overdue assignments, total sessions taught, and all roles (string agg)
+-- then: join them with the staff table
+
+
+-- students who haven't had an evaluation session yet (right join, check for null etc) (owen)
+-- plan 1: subquery (select student_id from student where student_id not in evaluation_session)
+-- plan 2: join (right join i think)
+-- note: try doing both and use EXPLAIN ANALYZE to improve performance for doc
+
+
+
+
+-- which students haven't paid for their enrolment and how much is owed. (steph)
+-- plan: join students, student_payment and course, using a comparison from amount_paid and course_cost to determine how much is left to pay
+
+
+
+
+-- top 5 lowest and highest feedbacked sessions (bradley)
+-- plan: use the same query, using UNION and LIMIT 5, reversing the ORDER BY for each case, also using RANK()
+
+
+-- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject) (bradley)
+-- plan: look at all submissions before due date, take MAX, compare with limited LATE assignments, take MAX of both
+-- then: group by student and subject for total subject mark, multiplying above result with assignment_weight
