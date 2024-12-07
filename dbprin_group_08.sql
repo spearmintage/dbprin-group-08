@@ -3229,10 +3229,21 @@ VALUES
 
 
 -- which students haven't paid for their enrolment and how much is owed. (steph)
--- plan: join students, student_payment and course, using a comparison from amount_paid and course_cost to determine how much is left to pay
-
-
-
+SELECT
+    CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
+    STRING_AGG(course_name::TEXT, ', ') AS "Courses",
+    STRING_AGG(course_cost::TEXT, ', ') AS "Cost",
+    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolments",
+    STRING_AGG(payment_status::TEXT, ', ') AS "Payment Statuses",
+    STRING_AGG(payment_amount::TEXT, ', ') AS "Payment Amounts",
+    STRING_AGG(ROUND(course_cost - payment_amount, 2)::TEXT, ', ') AS "Amounts Owed"
+FROM student
+JOIN enrolment USING (student_id)
+JOIN course USING (course_id)
+JOIN student_payment USING (enrolment_id)
+WHERE payment_status != 'Payment Success'
+GROUP BY student.student_id
+ORDER BY "Student";
 
 
 
