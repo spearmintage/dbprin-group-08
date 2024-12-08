@@ -3268,6 +3268,7 @@ ORDER BY "Average Rating of Concept Understood" DESC, "Average General Rating" D
 UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 -- Version 2 (WITH)
+DROP VIEW IF EXISTS all_session_feedback;
 WITH all_session_feedback AS (
     SELECT
         session_id AS "Session ID",
@@ -3344,3 +3345,13 @@ FROM student_subject_total_grade
         USING (student_id)
 GROUP BY "Student"
 ORDER BY "Student";
+
+
+-- SECURITY
+-- staff_member: can view their details such as availability, create absences, and view assignments (and set complete to true or false, only thing they can update from that table) I think that's all
+-- student: can create submissions and view them, alongside creating/viewing/editing health conditions and emergency contacts, and enrolling in courses and paying for enrolments
+
+-- branch_manager: everything from staff_member, but can also create staff assignments and view/edit branch information
+-- teacher: inherits from staff_member, but can also create/edit teaching sessions and evaluation sessions with students, alongside creating assignments for students and editing student assignment percentage
+
+-- coordinator: handles everything about department, course and subject information, and can view all other information, but not being able to update/delete.
