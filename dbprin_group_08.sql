@@ -3216,8 +3216,6 @@ VALUES
 
 
 -- staff name, email, branch, has overdue assignments?, total sessions taught?, roles (owen)
--- plan: create subqueries for overdue assignments, total sessions taught, and all roles (string agg)
--- then: join them with the staff table
 SELECT
     CONCAT(staff_first_name, ' ', staff_last_name) AS "Staff Name",
     staff_email AS "Email",
@@ -3234,7 +3232,10 @@ SELECT
     ) AS "No. Overdue Assignments",
     (
         SELECT
-            STRING_AGG(role_name, ', ')
+            CASE
+                WHEN ARRAY_LENGTH(ARRAY_AGG(role_name), 1) > 5 THEN CONCAT(ARRAY_TO_STRING((ARRAY_AGG(role_name))[1:5], ', '), ', ...')
+                ELSE ARRAY_TO_STRING((ARRAY_AGG(role_name))[1:5], ', ')
+            END
         FROM
             staff_role sr
             JOIN role r ON sr.role_id = r.role_id
