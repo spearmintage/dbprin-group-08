@@ -3216,8 +3216,6 @@ VALUES
 
 
 -- staff name, email, branch, has overdue assignments?, total sessions taught?, roles (owen)
--- plan: create subqueries for overdue assignments, total sessions taught, and all roles (string agg)
--- then: join them with the staff table
 SELECT
     CONCAT(staff_first_name, ' ', staff_last_name) AS "Staff Name",
     staff_email AS "Email",
@@ -3234,7 +3232,10 @@ SELECT
     ) AS "No. Overdue Assignments",
     (
         SELECT
-            STRING_AGG(role_name, ', ')
+            CASE
+                WHEN ARRAY_LENGTH(ARRAY_AGG(role_name), 1) > 5 THEN CONCAT(ARRAY_TO_STRING((ARRAY_AGG(role_name))[1:5], ', '), ', ...')
+                ELSE ARRAY_TO_STRING((ARRAY_AGG(role_name))[1:5], ', ')
+            END
         FROM
             staff_role sr
             JOIN role r ON sr.role_id = r.role_id
@@ -3253,7 +3254,8 @@ FROM
     staff s
     JOIN branch b ON s.branch_id = b.branch_id
 ORDER BY 
-    "No. Overdue Assignments" DESC;
+    "No. Overdue Assignments" DESC,
+    "Staff Name" ASC;
 
 -- students who haven't had an evaluation session yet (right join, check for null etc) (owen)
 -- plan 1: subquery (select student_id from student where student_id not in evaluation_session)
@@ -3264,22 +3266,50 @@ ORDER BY
 
 
 -- which students haven't paid for their enrolment and how much is owed. (steph)
+-- TODO: discuss the != payment success, as this is not accurate
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
-    STRING_AGG(course_name::TEXT, ', ') AS "Courses",
-    STRING_AGG(course_cost::TEXT, ', ') AS "Cost",
-    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolments",
+    STRING_AGG(course_name::TEXT, ', ') AS "Course(s)",
+    STRING_AGG(course_cost::TEXT, ', ') AS "Cost(s)",
+    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolment Statuses",
     STRING_AGG(payment_status::TEXT, ', ') AS "Payment Statuses",
     STRING_AGG(payment_amount::TEXT, ', ') AS "Payment Amounts",
     STRING_AGG(ROUND(course_cost - payment_amount, 2)::TEXT, ', ') AS "Amounts Owed"
 FROM student
-JOIN enrolment USING (student_id)
-JOIN course USING (course_id)
-JOIN student_payment USING (enrolment_id)
+    JOIN enrolment 
+        USING (student_id)
+    JOIN course 
+        USING (course_id)
+    JOIN student_payment 
+        USING (enrolment_id)
 WHERE payment_status != 'Payment Success'
 GROUP BY student.student_id
 ORDER BY "Student";
 
+
+
+
+-- which students haven't FULLY paid for their enrolment and how much is owed (bradley)
+SELECT
+    CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
+    course_name AS "Course",
+    SUM(course_cost) AS "Course Cost", -- has to be included, but since its always a single value, SUM aggregate function is used
+    CONCAT(
+        SUM(CASE WHEN payment_status = 'Payment Success' THEN COALESCE(payment_amount, 0.00) ELSE 0.00 END),
+        ' / ',
+        SUM(CASE WHEN payment_status != 'Payment Success' THEN COALESCE(payment_amount, 0.00) ELSE 0.00 END))
+    AS "Total Successful/Unsuccessful Payments",
+    SUM(course_cost) - SUM(COALESCE(payment_amount, 0.00)) AS "Amount Left to Pay"
+FROM enrolment
+    FULL JOIN student_payment
+        USING (enrolment_id)
+    JOIN student
+        USING (student_id)
+    JOIN course
+        USING (course_id)
+GROUP BY "Student", "Course"
+HAVING (SUM(course_cost) - SUM(CASE WHEN payment_status = 'Payment Success' THEN COALESCE(payment_amount, 0.00) ELSE 0.00 END) > 0.00)
+ORDER BY "Amount Left to Pay" DESC;
 
 
 
@@ -3303,6 +3333,7 @@ ORDER BY "Average Rating of Concept Understood" DESC, "Average General Rating" D
 UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 -- Version 2 (WITH)
+DROP VIEW IF EXISTS all_session_feedback;
 WITH all_session_feedback AS (
     SELECT
         session_id AS "Session ID",
@@ -3368,8 +3399,7 @@ ORDER BY student_id, subject_name;
 -- Query Part 4 (Final): organising this into a single row per student using STRING_AGG, listing student's full name
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
-    STRING_AGG(subject_name::TEXT, ', ') AS "Subjects Studied",
-    STRING_AGG(CONCAT(subject_grade, '%'), ', ') AS "Final Subject Grades (Weighted Assessments)",
+    STRING_AGG(CONCAT(subject_name::TEXT, ' (', CONCAT(subject_grade, '%'), ')'), ', ') AS "Subjects Studied and Final Grades",
     CASE
         WHEN (MIN(subject_grade) < 40.00) THEN 'Yes'
         ELSE 'No'
@@ -3379,3 +3409,13 @@ FROM student_subject_total_grade
         USING (student_id)
 GROUP BY "Student"
 ORDER BY "Student";
+
+
+-- SECURITY
+-- staff_member: can view their details such as availability, create absences, and view assignments (and set complete to true or false, only thing they can update from that table) I think that's all
+-- student: can create submissions and view them, alongside creating/viewing/editing health conditions and emergency contacts, and enrolling in courses and paying for enrolments
+
+-- branch_manager: everything from staff_member, but can also create staff assignments and view/edit branch information
+-- teacher: inherits from staff_member, but can also create/edit teaching sessions and evaluation sessions with students, alongside creating assignments for students and editing student assignment percentage
+
+-- coordinator: handles everything about department, course and subject information, and can view all other information, but not being able to update/delete.
