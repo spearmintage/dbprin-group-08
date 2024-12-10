@@ -3218,7 +3218,42 @@ VALUES
 -- staff name, email, branch, has overdue assignments?, total sessions taught?, roles (owen)
 -- plan: create subqueries for overdue assignments, total sessions taught, and all roles (string agg)
 -- then: join them with the staff table
-
+SELECT
+    CONCAT(staff_first_name, ' ', staff_last_name) AS "Staff Name",
+    staff_email AS "Email",
+    branch_name AS "Branch",
+    (
+        SELECT 
+            COUNT(sa.staff_assignment_id)
+        FROM
+            staff_assignment sa
+        WHERE
+            sa.staff_id = s.staff_id
+            AND sa.assignment_complete = 'FALSE'
+            AND sa.assignment_deadline < CURRENT_DATE
+    ) AS "No. Overdue Assignments",
+    (
+        SELECT
+            STRING_AGG(role_name, ', ')
+        FROM
+            staff_role sr
+            JOIN role r ON sr.role_id = r.role_id
+        WHERE
+            sr.staff_id = s.staff_id
+    ) AS "Roles",
+    (
+        SELECT
+            COUNT(ss.session_id)
+        FROM
+            session_staff ss
+        WHERE
+            ss.staff_id = s.staff_id
+    ) AS "No. sessions taught"
+FROM 
+    staff s
+    JOIN branch b ON s.branch_id = b.branch_id
+ORDER BY 
+    "No. Overdue Assignments" DESC;
 
 -- students who haven't had an evaluation session yet (right join, check for null etc) (owen)
 -- plan 1: subquery (select student_id from student where student_id not in evaluation_session)
