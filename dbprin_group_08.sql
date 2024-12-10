@@ -3289,6 +3289,30 @@ ORDER BY "Student";
 
 
 
+-- which students haven't FULLY paid for their enrolment and how much is owed (bradley)
+SELECT
+    CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
+    course_name AS "Course",
+    SUM(course_cost) AS "Course Cost", -- has to be included, but since its always a single value, SUM aggregate function is used
+    CONCAT(
+        SUM(CASE WHEN payment_status = 'Payment Success' THEN COALESCE(payment_amount, 0.00) ELSE 0.00 END),
+        ' / ',
+        SUM(CASE WHEN payment_status != 'Payment Success' THEN COALESCE(payment_amount, 0.00) ELSE 0.00 END))
+    AS "Total Successful/Unsuccessful Payments",
+    SUM(course_cost) - SUM(COALESCE(payment_amount, 0.00)) AS "Amount Left to Pay"
+FROM enrolment
+    FULL JOIN student_payment
+        USING (enrolment_id)
+    JOIN student
+        USING (student_id)
+    JOIN course
+        USING (course_id)
+GROUP BY "Student", "Course"
+HAVING (SUM(course_cost) - SUM(CASE WHEN payment_status = 'Payment Success' THEN COALESCE(payment_amount, 0.00) ELSE 0.00 END) > 0.00)
+ORDER BY "Amount Left to Pay" DESC;
+
+
+
 -- top 5 lowest and highest concept understood sessions, alongside staff (bradley)
 -- Version 1 (VIEW)
 DROP VIEW IF EXISTS all_session_feedback;
@@ -3329,7 +3353,6 @@ UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 
 -- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject) (bradley)
--- TODO: consider having subject percentage in brackets next to subject name
 -- Query Part 1: all adjusted submission percentages for each student, capping the marks at 40 if it is late, and setting it to 0 if not marked yet (null).
 DROP VIEW IF EXISTS all_adjusted_submissions;
 CREATE VIEW all_adjusted_submissions AS
@@ -3376,8 +3399,7 @@ ORDER BY student_id, subject_name;
 -- Query Part 4 (Final): organising this into a single row per student using STRING_AGG, listing student's full name
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
-    STRING_AGG(subject_name::TEXT, ', ') AS "Subjects Studied",
-    STRING_AGG(CONCAT(subject_grade, '%'), ', ') AS "Final Subject Grades (Weighted Assessments)",
+    STRING_AGG(CONCAT(subject_name::TEXT, ' (', CONCAT(subject_grade, '%'), ')'), ', ') AS "Subjects Studied and Final Grades",
     CASE
         WHEN (MIN(subject_grade) < 40.00) THEN 'Yes'
         ELSE 'No'
