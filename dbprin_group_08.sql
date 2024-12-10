@@ -3254,7 +3254,8 @@ FROM
     staff s
     JOIN branch b ON s.branch_id = b.branch_id
 ORDER BY 
-    "No. Overdue Assignments" DESC;
+    "No. Overdue Assignments" DESC,
+    "Staff Name" ASC;
 
 -- students who haven't had an evaluation session yet (right join, check for null etc) (owen)
 -- plan 1: subquery (select student_id from student where student_id not in evaluation_session)
@@ -3265,18 +3266,22 @@ ORDER BY
 
 
 -- which students haven't paid for their enrolment and how much is owed. (steph)
+-- TODO: discuss the != payment success, as this is not accurate
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
-    STRING_AGG(course_name::TEXT, ', ') AS "Courses",
-    STRING_AGG(course_cost::TEXT, ', ') AS "Cost",
-    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolments",
+    STRING_AGG(course_name::TEXT, ', ') AS "Course(s)",
+    STRING_AGG(course_cost::TEXT, ', ') AS "Cost(s)",
+    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolment Statuses",
     STRING_AGG(payment_status::TEXT, ', ') AS "Payment Statuses",
     STRING_AGG(payment_amount::TEXT, ', ') AS "Payment Amounts",
     STRING_AGG(ROUND(course_cost - payment_amount, 2)::TEXT, ', ') AS "Amounts Owed"
 FROM student
-JOIN enrolment USING (student_id)
-JOIN course USING (course_id)
-JOIN student_payment USING (enrolment_id)
+    JOIN enrolment 
+        USING (student_id)
+    JOIN course 
+        USING (course_id)
+    JOIN student_payment 
+        USING (enrolment_id)
 WHERE payment_status != 'Payment Success'
 GROUP BY student.student_id
 ORDER BY "Student";
@@ -3324,6 +3329,7 @@ UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 
 -- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject) (bradley)
+-- TODO: consider having subject percentage in brackets next to subject name
 -- Query Part 1: all adjusted submission percentages for each student, capping the marks at 40 if it is late, and setting it to 0 if not marked yet (null).
 DROP VIEW IF EXISTS all_adjusted_submissions;
 CREATE VIEW all_adjusted_submissions AS
