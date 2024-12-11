@@ -3262,6 +3262,30 @@ ORDER BY
 -- plan 2: join (right join i think)
 -- note: try doing both and use EXPLAIN ANALYZE to improve performance for doc
 
+--CREATING QUERY USING A LEFT JOIN:--
+SELECT
+    s.student_id AS "Student ID",
+    CONCAT(student_first_name, ' ', student_last_name) AS "Student Name"
+FROM
+    student s
+    LEFT JOIN evaluation_session e ON s.student_id = e.student_id
+WHERE 
+    e.student_id IS NULL;
+
+--CREATING QUERY USING A SUBQUERY:--
+SELECT
+    s.student_id AS "Student ID",
+    CONCAT(s.student_first_name, ' ', s.student_last_name) AS "Student Name"
+FROM
+    student s
+WHERE
+    s.student_id NOT IN 
+    (
+        SELECT 
+            e.student_id 
+        FROM
+            evaluation_session e
+     );
 
 
 
