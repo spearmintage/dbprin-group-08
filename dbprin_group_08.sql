@@ -1408,28 +1408,8 @@ VALUES
     (39, 6, '2021-10-24 15:10:00', null, null, true),
     (7, 26, '2023-01-15 9:50:00', 13, 'consequat morbi a ipsum integer a nibh in quis justo maecenas rhoncus aliquam lacus morbi quis tortor id nulla ultrices aliquet maecenas', false),
     (22, 10, '2022-08-05 12:10:00', null, null, true),
-    (44, 23, '2023-09-28 15:30:00', 1, 'nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris ullamcorper purus sit amet nulla quisque arcu libero rutrum ac lobortis vel dapibus at diam', false),
+    (44, 23, '2023-09-28 15:30:00', 1, 'nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris ullamcorper purus sit amet nulla quisque arcu libero rutrum ac lobortis vel dapibus at diam', false), 
     (7, 8, '2024-04-17 16:30:00', null, null, true),
-    (17, 8, '2022-10-01 14:30:00', 10, null, false),
-    (27, 17, '2024-06-19 8:50:00', 13, null, false),
-    (28, 25, '2024-01-15 14:20:00', null, null, true),
-    (2, 25, '2023-03-16 12:30:00', null, 'vitae quam suspendisse potenti nullam porttitor lacus at turpis donec posuere metus vitae ipsum aliquam non mauris morbi non lectus aliquam sit amet diam in magna bibendum imperdiet nullam orci pede venenatis non sodales sed tincidunt eu felis fusce posuere felis', true),
-    (21, 21, '2023-06-29 8:50:00', 18, null, false),
-    (28, 15, '2021-11-17 16:10:00', 19, null, false),
-    (7, 17, '2021-09-19 11:00:00', null, 'sapien placerat ante nulla justo aliquam quis turpis eget elit sodales scelerisque mauris sit amet eros suspendisse accumsan tortor quis turpis sed ante vivamus tortor duis mattis egestas metus aenean fermentum donec ut mauris eget massa tempor convallis nulla neque libero convallis', true),
-    (16, 10, '2021-02-12 16:50:00', null, 'pretium iaculis justo in hac habitasse platea dictumst etiam faucibus cursus urna ut tellus nulla ut erat id mauris vulputate elementum nullam varius nulla facilisi cras non velit nec nisi vulputate nonummy maecenas', true),
-    (2, 10, '2022-11-17 10:00:00', 11, null, false),
-    (38, 3, '2023-08-16 8:20:00', null, 'est donec odio justo sollicitudin ut suscipit a feugiat et eros vestibulum ac est lacinia nisi venenatis tristique fusce congue diam id ornare imperdiet sapien urna pretium nisl ut volutpat sapien arcu sed augue aliquam erat volutpat in congue etiam justo etiam', true),
-    (8, 16, '2024-02-17 9:30:00', 20, 'ac nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris ullamcorper purus sit amet nulla quisque arcu libero rutrum ac lobortis', false),
-    (28, 11, '2024-04-25 13:30:00', 19, null, false),
-    (45, 27, '2022-02-03 16:00:00', null, null, true),
-    (48, 5, '2022-09-16 12:40:00', 1, null, false),
-    (17, 11, '2022-09-17 11:50:00', null, null, true),
-    (35, 22, '2021-08-28 17:10:00', 8, null, false),
-    (8, 24, '2021-06-25 16:40:00', null, 'nulla elit ac nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum', true),
-    (15, 25, '2022-11-03 13:40:00', null, null, true),
-    (34, 24, '2023-10-16 10:30:00', null, null, true),
-    (39, 20, '2023-12-19 13:40:00', null, null, true),
     (33, 9, '2024-05-02 17:10:00', 9, 'justo in blandit ultrices enim lorem ipsum dolor sit amet consectetuer adipiscing elit proin interdum mauris non ligula pellentesque ultrices phasellus id sapien in sapien iaculis congue vivamus metus arcu adipiscing molestie hendrerit at vulputate vitae nisl', false);
 
 INSERT INTO assignment (assignment_id, staff_id, subject_id, set_date, due_date, assignment_description, is_assignment_assessed, assignment_weight)
@@ -1454,7 +1434,7 @@ VALUES
     (18,11,17,'2024-12-02 13:00:00','2024-12-15 13:00:00','Suspendisse eu tincidunt metus, sit amet pharetra neque.',false,NULL),
     (19,9,19,'2024-12-02 13:00:00','2024-12-15 13:00:00','Suspendisse eu tincidunt metus, sit amet pharetra neque.',false,NULL),
     (20,8,19,'2024-12-04 13:30:00','2024-12-17 13:00:00','Fusce eu tincidunt nibh.',true,62.5);
-
+    
 INSERT INTO student_assignment (student_id, assignment_id, submission_datetime, assignment_percentage)
 VALUES
     (1, 1, '2024-09-12 23:01:57', 68.24),
@@ -3325,7 +3305,7 @@ SELECT
     AS "Total Successful/Unsuccessful Payments",
     SUM(course_cost) - SUM(COALESCE(payment_amount, 0.00)) AS "Amount Left to Pay"
 FROM enrolment
-    FULL JOIN student_payment
+    LEFT JOIN student_payment
         USING (enrolment_id)
     JOIN student
         USING (student_id)
