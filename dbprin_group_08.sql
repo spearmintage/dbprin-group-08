@@ -1408,28 +1408,8 @@ VALUES
     (39, 6, '2021-10-24 15:10:00', null, null, true),
     (7, 26, '2023-01-15 9:50:00', 13, 'consequat morbi a ipsum integer a nibh in quis justo maecenas rhoncus aliquam lacus morbi quis tortor id nulla ultrices aliquet maecenas', false),
     (22, 10, '2022-08-05 12:10:00', null, null, true),
-    (44, 23, '2023-09-28 15:30:00', 1, 'nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris ullamcorper purus sit amet nulla quisque arcu libero rutrum ac lobortis vel dapibus at diam', false),
+    (44, 23, '2023-09-28 15:30:00', 1, 'nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris ullamcorper purus sit amet nulla quisque arcu libero rutrum ac lobortis vel dapibus at diam', false), 
     (7, 8, '2024-04-17 16:30:00', null, null, true),
-    (17, 8, '2022-10-01 14:30:00', 10, null, false),
-    (27, 17, '2024-06-19 8:50:00', 13, null, false),
-    (28, 25, '2024-01-15 14:20:00', null, null, true),
-    (2, 25, '2023-03-16 12:30:00', null, 'vitae quam suspendisse potenti nullam porttitor lacus at turpis donec posuere metus vitae ipsum aliquam non mauris morbi non lectus aliquam sit amet diam in magna bibendum imperdiet nullam orci pede venenatis non sodales sed tincidunt eu felis fusce posuere felis', true),
-    (21, 21, '2023-06-29 8:50:00', 18, null, false),
-    (28, 15, '2021-11-17 16:10:00', 19, null, false),
-    (7, 17, '2021-09-19 11:00:00', null, 'sapien placerat ante nulla justo aliquam quis turpis eget elit sodales scelerisque mauris sit amet eros suspendisse accumsan tortor quis turpis sed ante vivamus tortor duis mattis egestas metus aenean fermentum donec ut mauris eget massa tempor convallis nulla neque libero convallis', true),
-    (16, 10, '2021-02-12 16:50:00', null, 'pretium iaculis justo in hac habitasse platea dictumst etiam faucibus cursus urna ut tellus nulla ut erat id mauris vulputate elementum nullam varius nulla facilisi cras non velit nec nisi vulputate nonummy maecenas', true),
-    (2, 10, '2022-11-17 10:00:00', 11, null, false),
-    (38, 3, '2023-08-16 8:20:00', null, 'est donec odio justo sollicitudin ut suscipit a feugiat et eros vestibulum ac est lacinia nisi venenatis tristique fusce congue diam id ornare imperdiet sapien urna pretium nisl ut volutpat sapien arcu sed augue aliquam erat volutpat in congue etiam justo etiam', true),
-    (8, 16, '2024-02-17 9:30:00', 20, 'ac nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris ullamcorper purus sit amet nulla quisque arcu libero rutrum ac lobortis', false),
-    (28, 11, '2024-04-25 13:30:00', 19, null, false),
-    (45, 27, '2022-02-03 16:00:00', null, null, true),
-    (48, 5, '2022-09-16 12:40:00', 1, null, false),
-    (17, 11, '2022-09-17 11:50:00', null, null, true),
-    (35, 22, '2021-08-28 17:10:00', 8, null, false),
-    (8, 24, '2021-06-25 16:40:00', null, 'nulla elit ac nulla sed vel enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum', true),
-    (15, 25, '2022-11-03 13:40:00', null, null, true),
-    (34, 24, '2023-10-16 10:30:00', null, null, true),
-    (39, 20, '2023-12-19 13:40:00', null, null, true),
     (33, 9, '2024-05-02 17:10:00', 9, 'justo in blandit ultrices enim lorem ipsum dolor sit amet consectetuer adipiscing elit proin interdum mauris non ligula pellentesque ultrices phasellus id sapien in sapien iaculis congue vivamus metus arcu adipiscing molestie hendrerit at vulputate vitae nisl', false);
 
 INSERT INTO assignment (assignment_id, staff_id, subject_id, set_date, due_date, assignment_description, is_assignment_assessed, assignment_weight)
@@ -1454,7 +1434,7 @@ VALUES
     (18,11,17,'2024-12-02 13:00:00','2024-12-15 13:00:00','Suspendisse eu tincidunt metus, sit amet pharetra neque.',false,NULL),
     (19,9,19,'2024-12-02 13:00:00','2024-12-15 13:00:00','Suspendisse eu tincidunt metus, sit amet pharetra neque.',false,NULL),
     (20,8,19,'2024-12-04 13:30:00','2024-12-17 13:00:00','Fusce eu tincidunt nibh.',true,62.5);
-
+    
 INSERT INTO student_assignment (student_id, assignment_id, submission_datetime, assignment_percentage)
 VALUES
     (1, 1, '2024-09-12 23:01:57', 68.24),
@@ -3215,7 +3195,7 @@ VALUES
 -- Queries
 
 
--- staff name, email, branch, has overdue assignments?, total sessions taught?, roles (owen)
+-- staff details overview
 SELECT
     CONCAT(staff_first_name, ' ', staff_last_name) AS "Staff Name",
     staff_email AS "Email",
@@ -3257,12 +3237,9 @@ ORDER BY
     "No. Overdue Assignments" DESC,
     "Staff Name" ASC;
 
--- students who haven't had an evaluation session yet (right join, check for null etc) (owen)
--- plan 1: subquery (select student_id from student where student_id not in evaluation_session)
--- plan 2: join (right join i think)
--- note: try doing both and use EXPLAIN ANALYZE to improve performance for doc
-
---CREATING QUERY USING A LEFT JOIN:--
+-- students who haven't had an evaluation session yet
+--CREATING QUERY USING A LEFT JOIN:-- (slightly slower)
+/*
 SELECT
     s.student_id AS "Student ID",
     CONCAT(student_first_name, ' ', student_last_name) AS "Student Name"
@@ -3271,8 +3248,10 @@ FROM
     LEFT JOIN evaluation_session e ON s.student_id = e.student_id
 WHERE 
     e.student_id IS NULL;
+*/
 
---CREATING QUERY USING A SUBQUERY:--
+
+--CREATING QUERY USING A SUBQUERY:-- (quicker)
 SELECT
     s.student_id AS "Student ID",
     CONCAT(s.student_first_name, ' ', s.student_last_name) AS "Student Name"
@@ -3287,33 +3266,7 @@ WHERE
             evaluation_session e
      );
 
-
-
--- which students haven't paid for their enrolment and how much is owed. (steph)
--- TODO: discuss the != payment success, as this is not accurate
-SELECT
-    CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
-    STRING_AGG(course_name::TEXT, ', ') AS "Course(s)",
-    STRING_AGG(course_cost::TEXT, ', ') AS "Cost(s)",
-    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolment Statuses",
-    STRING_AGG(payment_status::TEXT, ', ') AS "Payment Statuses",
-    STRING_AGG(payment_amount::TEXT, ', ') AS "Payment Amounts",
-    STRING_AGG(ROUND(course_cost - payment_amount, 2)::TEXT, ', ') AS "Amounts Owed"
-FROM student
-    JOIN enrolment 
-        USING (student_id)
-    JOIN course 
-        USING (course_id)
-    JOIN student_payment 
-        USING (enrolment_id)
-WHERE payment_status != 'Payment Success'
-GROUP BY student.student_id
-ORDER BY "Student";
-
-
-
-
--- which students haven't FULLY paid for their enrolment and how much is owed (bradley)
+-- which students haven't FULLY paid for their enrolment and how much is owed
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
     course_name AS "Course",
@@ -3325,7 +3278,7 @@ SELECT
     AS "Total Successful/Unsuccessful Payments",
     SUM(course_cost) - SUM(COALESCE(payment_amount, 0.00)) AS "Amount Left to Pay"
 FROM enrolment
-    FULL JOIN student_payment
+    LEFT JOIN student_payment
         USING (enrolment_id)
     JOIN student
         USING (student_id)
@@ -3337,8 +3290,9 @@ ORDER BY "Amount Left to Pay" DESC;
 
 
 
--- top 5 lowest and highest concept understood sessions, alongside staff (bradley)
--- Version 1 (VIEW)
+-- top 5 lowest and highest concept understood sessions, alongside staff
+-- Version 1 (VIEW) (slower)
+/*
 DROP VIEW IF EXISTS all_session_feedback;
 CREATE VIEW all_session_feedback AS
 SELECT
@@ -3356,6 +3310,7 @@ ORDER BY "Average Rating of Concept Understood" DESC, "Average General Rating" D
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback LIMIT 5)
 UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
+*/
 -- Version 2 (WITH)
 DROP VIEW IF EXISTS all_session_feedback;
 WITH all_session_feedback AS (
@@ -3376,7 +3331,7 @@ WITH all_session_feedback AS (
 UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 
--- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject) (bradley)
+-- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject)
 -- Query Part 1: all adjusted submission percentages for each student, capping the marks at 40 if it is late, and setting it to 0 if not marked yet (null).
 DROP VIEW IF EXISTS all_adjusted_submissions;
 CREATE VIEW all_adjusted_submissions AS
@@ -3436,10 +3391,36 @@ ORDER BY "Student";
 
 
 -- SECURITY
--- staff_member: can view their details such as availability, create absences, and view assignments (and set complete to true or false, only thing they can update from that table) I think that's all
--- student: can create submissions and view them, alongside creating/viewing/editing health conditions and emergency contacts, and enrolling in courses and paying for enrolments
 
--- branch_manager: everything from staff_member, but can also create staff assignments and view/edit branch information
--- teacher: inherits from staff_member, but can also create/edit teaching sessions and evaluation sessions with students, alongside creating assignments for students and editing student assignment percentage
 
--- coordinator: handles everything about department, course and subject information, and can view all other information, but not being able to update/delete.
+-- teacher role
+CREATE ROLE teacher WITH LOGIN PASSWORD 'ses_teach';
+GRANT SELECT ON
+    department,
+    course,
+    subject,
+    course_subject,
+    assignment,
+    student_assignment,
+    student,
+    enrolment,
+    session TO teacher;
+
+
+-- coordinator role
+CREATE ROLE coordinator WITH CREATEROLE LOGIN PASSWORD 'ses_coord';
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO coordinator;
+GRANT INSERT, UPDATE, DELETE ON TABLE
+    department,
+    course,
+    staff,
+    course_staff,
+    subject,
+    course_subject,
+    role,
+    staff_role,
+    branch,
+    room,
+    facility,
+    room_facility,
+    health_condition TO coordinator;
