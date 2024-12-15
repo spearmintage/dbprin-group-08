@@ -3195,7 +3195,7 @@ VALUES
 -- Queries
 
 
--- staff name, email, branch, has overdue assignments?, total sessions taught?, roles (owen)
+-- staff details overview
 SELECT
     CONCAT(staff_first_name, ' ', staff_last_name) AS "Staff Name",
     staff_email AS "Email",
@@ -3237,12 +3237,9 @@ ORDER BY
     "No. Overdue Assignments" DESC,
     "Staff Name" ASC;
 
--- students who haven't had an evaluation session yet (right join, check for null etc) (owen)
--- plan 1: subquery (select student_id from student where student_id not in evaluation_session)
--- plan 2: join (right join i think)
--- note: try doing both and use EXPLAIN ANALYZE to improve performance for doc
-
---CREATING QUERY USING A LEFT JOIN:--
+-- students who haven't had an evaluation session yet
+--CREATING QUERY USING A LEFT JOIN:-- (slightly slower)
+/*
 SELECT
     s.student_id AS "Student ID",
     CONCAT(student_first_name, ' ', student_last_name) AS "Student Name"
@@ -3251,8 +3248,10 @@ FROM
     LEFT JOIN evaluation_session e ON s.student_id = e.student_id
 WHERE 
     e.student_id IS NULL;
+*/
 
---CREATING QUERY USING A SUBQUERY:--
+
+--CREATING QUERY USING A SUBQUERY:-- (quicker)
 SELECT
     s.student_id AS "Student ID",
     CONCAT(s.student_first_name, ' ', s.student_last_name) AS "Student Name"
@@ -3267,33 +3266,7 @@ WHERE
             evaluation_session e
      );
 
-
-
--- which students haven't paid for their enrolment and how much is owed. (steph)
--- TODO: discuss the != payment success, as this is not accurate
-SELECT
-    CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
-    STRING_AGG(course_name::TEXT, ', ') AS "Course(s)",
-    STRING_AGG(course_cost::TEXT, ', ') AS "Cost(s)",
-    STRING_AGG(enrolment_status::TEXT, ', ') AS "Enrolment Statuses",
-    STRING_AGG(payment_status::TEXT, ', ') AS "Payment Statuses",
-    STRING_AGG(payment_amount::TEXT, ', ') AS "Payment Amounts",
-    STRING_AGG(ROUND(course_cost - payment_amount, 2)::TEXT, ', ') AS "Amounts Owed"
-FROM student
-    JOIN enrolment 
-        USING (student_id)
-    JOIN course 
-        USING (course_id)
-    JOIN student_payment 
-        USING (enrolment_id)
-WHERE payment_status != 'Payment Success'
-GROUP BY student.student_id
-ORDER BY "Student";
-
-
-
-
--- which students haven't FULLY paid for their enrolment and how much is owed (bradley)
+-- which students haven't FULLY paid for their enrolment and how much is owed
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
     course_name AS "Course",
@@ -3317,8 +3290,9 @@ ORDER BY "Amount Left to Pay" DESC;
 
 
 
--- top 5 lowest and highest concept understood sessions, alongside staff (bradley)
--- Version 1 (VIEW)
+-- top 5 lowest and highest concept understood sessions, alongside staff
+-- Version 1 (VIEW) (slower)
+/*
 DROP VIEW IF EXISTS all_session_feedback;
 CREATE VIEW all_session_feedback AS
 SELECT
@@ -3336,6 +3310,7 @@ ORDER BY "Average Rating of Concept Understood" DESC, "Average General Rating" D
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback LIMIT 5)
 UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
+*/
 -- Version 2 (WITH)
 DROP VIEW IF EXISTS all_session_feedback;
 WITH all_session_feedback AS (
@@ -3356,7 +3331,7 @@ WITH all_session_feedback AS (
 UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 
--- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject) (bradley)
+-- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject)
 -- Query Part 1: all adjusted submission percentages for each student, capping the marks at 40 if it is late, and setting it to 0 if not marked yet (null).
 DROP VIEW IF EXISTS all_adjusted_submissions;
 CREATE VIEW all_adjusted_submissions AS
@@ -3416,10 +3391,36 @@ ORDER BY "Student";
 
 
 -- SECURITY
--- staff_member: can view their details such as availability, create absences, and view assignments (and set complete to true or false, only thing they can update from that table) I think that's all
--- student: can create submissions and view them, alongside creating/viewing/editing health conditions and emergency contacts, and enrolling in courses and paying for enrolments
 
--- branch_manager: everything from staff_member, but can also create staff assignments and view/edit branch information
--- teacher: inherits from staff_member, but can also create/edit teaching sessions and evaluation sessions with students, alongside creating assignments for students and editing student assignment percentage
 
--- coordinator: handles everything about department, course and subject information, and can view all other information, but not being able to update/delete.
+-- teacher role
+CREATE ROLE teacher WITH LOGIN PASSWORD 'ses_teach';
+GRANT SELECT ON
+    department,
+    course,
+    subject,
+    course_subject,
+    assignment,
+    student_assignment,
+    student,
+    enrolment,
+    session TO teacher;
+
+
+-- coordinator role
+CREATE ROLE coordinator WITH CREATEROLE LOGIN PASSWORD 'ses_coord';
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO coordinator;
+GRANT INSERT, UPDATE, DELETE ON TABLE
+    department,
+    course,
+    staff,
+    course_staff,
+    subject,
+    course_subject,
+    role,
+    staff_role,
+    branch,
+    room,
+    facility,
+    room_facility,
+    health_condition TO coordinator;
