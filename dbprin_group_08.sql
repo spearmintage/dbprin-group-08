@@ -3196,20 +3196,11 @@ VALUES
 
 
 -- staff details overview
+CREATE OR REPLACE VIEW staff_details AS
 SELECT
-    CONCAT(staff_first_name, ' ', staff_last_name) AS "Staff Name",
+    CONCAT_WS(' ', staff_first_name, staff_middle_name, staff_last_name) AS "Staff Name",
     staff_email AS "Email",
     branch_name AS "Branch",
-    (
-        SELECT 
-            COUNT(sa.staff_assignment_id)
-        FROM
-            staff_assignment sa
-        WHERE
-            sa.staff_id = s.staff_id
-            AND sa.assignment_complete = 'FALSE'
-            AND sa.assignment_deadline < CURRENT_DATE
-    ) AS "No. Overdue Assignments",
     (
         SELECT
             CASE
@@ -3222,6 +3213,16 @@ SELECT
         WHERE
             sr.staff_id = s.staff_id
     ) AS "Roles",
+    (
+        SELECT 
+            COUNT(sa.staff_assignment_id)
+        FROM
+            staff_assignment sa
+        WHERE
+            sa.staff_id = s.staff_id
+            AND sa.assignment_complete = 'FALSE'
+            AND sa.assignment_deadline < CURRENT_DATE
+    ) AS "No. Overdue Assignments",
     (
         SELECT
             COUNT(ss.session_id)
@@ -3237,36 +3238,21 @@ ORDER BY
     "No. Overdue Assignments" DESC,
     "Staff Name" ASC;
 
--- students who haven't had an evaluation session yet
---CREATING QUERY USING A LEFT JOIN:-- (slightly slower)
-/*
+-- students who haven't had an evaluation session within 6 months
+CREATE OR REPLACE VIEW no_recent_eval_session_students AS
 SELECT
-    s.student_id AS "Student ID",
-    CONCAT(student_first_name, ' ', student_last_name) AS "Student Name"
-FROM
-    student s
-    LEFT JOIN evaluation_session e ON s.student_id = e.student_id
-WHERE 
-    e.student_id IS NULL;
-*/
+    CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student with No Session Within 6 Months",
+    COALESCE(MAX(session_datetime)::TEXT, '0 Evaluation Sessions on Record') AS "Most Recent Session"
+FROM student
+    LEFT JOIN evaluation_session
+        USING (student_id)
+GROUP BY "Student with No Session Within 6 Months"
+HAVING (MAX(session_datetime) < NOW() - INTERVAL '6 MONTHS') OR (MAX(session_datetime) IS NULL)
+ORDER BY "Most Recent Session";
 
-
---CREATING QUERY USING A SUBQUERY:-- (quicker)
-SELECT
-    s.student_id AS "Student ID",
-    CONCAT(s.student_first_name, ' ', s.student_last_name) AS "Student Name"
-FROM
-    student s
-WHERE
-    s.student_id NOT IN 
-    (
-        SELECT 
-            e.student_id 
-        FROM
-            evaluation_session e
-     );
 
 -- which students haven't FULLY paid for their enrolment and how much is owed
+CREATE OR REPLACE VIEW student_enrolment_not_fully_paid AS
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
     course_name AS "Course",
@@ -3293,8 +3279,7 @@ ORDER BY "Amount Left to Pay" DESC;
 -- top 5 lowest and highest concept understood sessions, alongside staff
 -- Version 1 (VIEW) (slower)
 /*
-DROP VIEW IF EXISTS all_session_feedback;
-CREATE VIEW all_session_feedback AS
+CREATE OR REPLACE VIEW all_session_feedback AS
 SELECT
     session_id AS "Session ID",
     round(AVG(feedback_general_rating), 1) as "Average General Rating",
@@ -3312,8 +3297,8 @@ UNION ALL
 (SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
 */
 -- Version 2 (WITH)
-DROP VIEW IF EXISTS all_session_feedback;
-WITH all_session_feedback AS (
+CREATE OR REPLACE VIEW all_session_feedback AS
+WITH t AS (
     SELECT
         session_id AS "Session ID",
         round(AVG(feedback_general_rating), 1) as "Average General Rating",
@@ -3327,14 +3312,13 @@ WITH all_session_feedback AS (
     GROUP BY session_id
     ORDER BY "Average Rating of Concept Understood" DESC, "Average General Rating" DESC
 )
-(SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback LIMIT 5)
+(SELECT *, row_number() OVER () AS "Rank" FROM t LIMIT 5)
 UNION ALL
-(SELECT *, row_number() OVER () AS "Rank" FROM all_session_feedback OFFSET (SELECT COUNT(*) - 5 FROM all_session_feedback) LIMIT 5);
+(SELECT *, row_number() OVER () AS "Rank" FROM t OFFSET (SELECT COUNT(*) - 5 FROM t) LIMIT 5);
 
 -- student subject grade for each subject, alongside cases for above/below a mark threshold (70=1st, 60=2:1, etc..), considering capping late submissions (group by student and subject)
 -- Query Part 1: all adjusted submission percentages for each student, capping the marks at 40 if it is late, and setting it to 0 if not marked yet (null).
-DROP VIEW IF EXISTS all_adjusted_submissions;
-CREATE VIEW all_adjusted_submissions AS
+CREATE OR REPLACE VIEW all_adjusted_submissions AS
 SELECT 
     student_id,
     assignment_id,
@@ -3349,8 +3333,7 @@ FROM student_assignment
         USING (assignment_id)
 ORDER BY assignment_id;
 -- Query Part 2: the maximum percentage multiplied by the assignment weight for any ASSESSED student assignment
-DROP VIEW IF EXISTS all_assessed_weighted_percentages;
-CREATE VIEW all_assessed_weighted_percentages AS
+CREATE OR REPLACE VIEW all_assessed_weighted_percentages AS
 SELECT
     student_id,
     assignment_id,
@@ -3362,8 +3345,7 @@ WHERE is_assignment_assessed
 GROUP BY student_id, assignment_id, assignment_weight
 ORDER BY assignment_id;
 -- Query Part 3: the sum of all weighted percentages for every subject
-DROP VIEW IF EXISTS student_subject_total_grade;
-CREATE VIEW student_subject_total_grade AS
+CREATE OR REPLACE VIEW student_subject_total_grade AS
 SELECT
     student_id,
     subject_name,
@@ -3376,6 +3358,7 @@ FROM subject
 GROUP BY student_id, subject_name
 ORDER BY student_id, subject_name;
 -- Query Part 4 (Final): organising this into a single row per student using STRING_AGG, listing student's full name
+CREATE OR REPLACE VIEW student_final_grades AS
 SELECT
     CONCAT_WS(' ', student_first_name, student_middle_name, student_last_name) AS "Student",
     STRING_AGG(CONCAT(subject_name::TEXT, ' (', CONCAT(subject_grade, '%'), ')'), ', ') AS "Subjects Studied and Final Grades",
@@ -3390,7 +3373,9 @@ GROUP BY "Student"
 ORDER BY "Student";
 
 
--- SECURITY
+-- SECURITY (delete all roles beforehand)
+DROP OWNED BY teacher; DROP ROLE teacher;
+DROP OWNED BY coordinator; DROP ROLE coordinator;
 
 
 -- teacher role
